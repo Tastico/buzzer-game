@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Family Buzzer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f8f6f2;
+  min-height: 100vh;
+  color: #2d2a24;
+}
+.container { max-width: 500px; margin: 0 auto; padding: 0; }
+
+/* WARM HEADER */
+.hero {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  padding: 28px 20px 24px;
+  text-align: center;
+  color: #1a1508;
+}
+.hero h1 {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.hero p {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* CARDS */
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+/* NAME ENTRY */
+.name-card input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e8e3da;
+  border-radius: 12px;
+  font-size: 17px;
+  font-family: inherit;
+  outline: none;
+  background: #faf8f5;
+  transition: border 0.2s;
+}
+.name-card input:focus {
+  border-color: #f59e0b;
+  background: white;
+}
+.name-card button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: #f59e0b;
+  color: #1a1508;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.2s;
+}
+.name-card button:active { transform: scale(0.97); }
+.name-card button:hover { background: #d97706; color: white; }
+
+/* PLACEHOLDER FOR GAME */
+.game-section { display: none; }
+
+/* STATUS PILL */
+.status-pill {
+  text-align: center;
+  padding: 10px 16px;
+  margin: 16px 16px 0;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.pill-waiting { background: #fef3c7; color: #92400e; }
+.pill-active { background: #d1fae5; color: #065f46; }
+.pill-locked { background: #fee2e2; color: #991b1b; }
+
+/* BUZZ BUTTON — warm orange/amber */
+.buzz-wrap {
+  text-align: center;
+  padding: 20px 16px;
+}
+.buzz-big {
+  width: 210px; height: 210px;
+  border-radius: 50%;
+  border: 6px solid #fde68a;
+  background: linear-gradient(145deg, #fbbf24, #f59e0b);
+  color: #1a1508;
+  font-family: inherit;
+  font-size: 30px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(245,158,11,0.3), inset 0 -6px 12px rgba(0,0,0,0.08);
+  transition: all 0.1s;
+  letter-spacing: 2px;
+}
+.buzz-big:active { transform: scale(0.9); }
+.buzz-big:disabled {
+  background: #e5e0d8;
+  color: #a09888;
+  box-shadow: none;
+  border-color: #e5e0d8;
+  cursor: not-allowed;
+  transform: none;
+}
+.buzz-big .sub {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.7;
+  margin-top: 4px;
+  letter-spacing: 0;
+}
+
+/* PLAYERS LIST */
+.player-card {
+  background: white;
+  border-radius: 16px;
+  margin: 0 16px 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.player-card h3 {
+  padding: 14px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #a09888;
+  background: #faf8f5;
+  border-bottom: 1px solid #f0ece6;
+}
+.p-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 18px;
+  border-bottom: 1px solid #f5f2ec;
+  transition: background 0.2s;
+}
+.p-row:last-child { border-bottom: none; }
+.p-row.hot { background: #fef9e7; }
+.p-row.correct-row { background: #ecfdf3; }
+.p-pos { font-size: 14px; color: #d4cdc2; font-weight: 700; width: 28px; }
+.p-name { flex: 1; font-size: 16px; font-weight: 500; color: #2d2a24; }
+.p-points { font-size: 18px; font-weight: 700; color: #f59e0b; }
+.p-tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.tag-buzz { background: #fef3c7; color: #d97706; }
+.tag-win { background: #d1fae5; color: #059669; }
+
+/* NOTIFICATION BAR (mobile bottom) */
+.notif-bar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: white;
+  padding: 14px 20px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 15px;
+  border-top: 1px solid #e8e3da;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
+  z-index: 30;
+  animation: slideUp 0.2s ease-out;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.notif-bar.show { display: block; }
+
+/* COUNTDOWN — full screen warm */
+.countdown-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #1a1508, #29231a);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.countdown-screen.show { display: flex; }
+.cd-num {
+  font-size: 160px;
+  font-weight: 700;
+  color: #fbbf24;
+  line-height: 1;
+}
+.cd-label {
+  font-size: 20px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .buzz-big { width: 170px; height: 170px; font-size: 26px; }
+  .hero h1 { font-size: 26px; }
+  .cd-num { font-size: 110px; }
+}
+</style>
+</head>
+<body>
+  <!-- Warm Amber Hero -->
+  <div class="hero">
+    <h1>🌟 Family Buzzer</h1>
+    <p>Game show style — who's fastest?</p>
+  </div>
+
+  <!-- Name Entry -->
+  <div class="card name-card" id="nameCard">
+    <input type="text" id="nameInput" placeholder="Enter your name..." maxlength="20" autocomplete="off">
+    <button onclick="joinGame()">Join the Game 🎮</button>
+  </div>
+
+  <!-- Game Section -->
+  <div class="game-section" id="gameSection">
+    <div class="status-pill pill-waiting" id="statusPill">⏳ Waiting for the host to start...</div>
+
+    <div class="buzz-wrap">
+      <button class="buzz-big" id="buzzBtn" disabled>
+        BUZZ!
+        <span class="sub">tap quickly!</span>
+      </button>
+    </div>
+
+    <div class="player-card">
+      <h3>🏆 Scoreboard</h3>
+      <div id="playerRows"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Notification Bar -->
+  <div class="notif-bar" id="notifBar"></div>
+
+  <!-- Countdown Screen -->
+  <div class="countdown-screen" id="countdownScreen">
+    <div class="cd-num" id="cdNum">3</div>
+    <div class="cd-label">Next round starting...</div>
+  </div>
+
+<script>
+// ===== DEMO =====
+let myName = '';
+let players = [
+  {name: 'Mom', score: 4, status: ''},
+  {name: 'Dad', score: 3, status: ''},
+  {name: 'Sarah', score: 1, status: ''},
+  {name: 'Tommy', score: 0, status: 'buzzed'},
+  {name: 'Guest', score: 0, status: ''},
+];
+
+function joinGame() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) return;
+  myName = name;
+  document.getElementById('nameCard').style.display = 'none';
+  document.getElementById('gameSection').style.display = 'block';
+  if (!players.find(p => p.name === name)) {
+    players.push({name, score: 0, status: ''});
+  }
+  renderPlayers();
+  simulateDemo();
+}
+
+function renderPlayers() {
+  const sorted = [...players].sort((a,b) => b.score - a.score);
+  const list = document.getElementById('playerRows');
+  list.innerHTML = sorted.map((p, i) => `
+    <div class="p-row ${p.status === 'buzzed' ? 'hot' : ''} ${p.status === 'correct' ? 'correct-row' : ''}">
+      <span class="p-pos">#${i+1}</span>
+      <span class="p-name">${p.name}${p.name === myName ? ' 👈' : ''}</span>
+      <span class="p-points">${p.score}</span>
+      ${p.status === 'buzzed' ? '<span class="p-tag tag-buzz">⏰ BUZZED</span>' : ''}
+      ${p.status === 'correct' ? '<span class="p-tag tag-win">✅</span>' : ''}
+    </div>
+  `).join('');
+}
+
+function setPill(type, msg) {
+  const el = document.getElementById('statusPill');
+  const btn = document.getElementById('buzzBtn');
+  el.className = 'status-pill';
+  
+  switch(type) {
+    case 'waiting': el.classList.add('pill-waiting'); el.textContent = '⏳ ' + msg; btn.disabled = true; btn.innerHTML = 'BUZZ!<span class="sub">waiting...</span>'; break;
+    case 'active': el.classList.add('pill-active'); el.textContent = '🟢 ' + msg; btn.disabled = false; btn.innerHTML = 'BUZZ!<span class="sub">tap quickly!</span>'; break;
+    case 'locked': el.classList.add('pill-locked'); el.textContent = '🔴 ' + msg; btn.disabled = true; btn.innerHTML = '⛔ LOCKED<span class="sub">judge deciding</span>'; break;
+  }
+}
+
+function showNotif(text, duration) {
+  const bar = document.getElementById('notifBar');
+  bar.textContent = text;
+  bar.classList.add('show');
+  if (duration) setTimeout(() => bar.classList.remove('show'), duration);
+}
+
+function showCountdown(n) {
+  const screen = document.getElementById('countdownScreen');
+  screen.classList.add('show');
+  document.getElementById('cdNum').textContent = n;
+}
+
+function simulateDemo() {
+  setPill('active', 'Buzz in!');
+  renderPlayers();
+
+  setTimeout(() => {
+    players = players.map(p => ({...p, status: p.name === 'Tommy' ? 'buzzed' : ''}));
+    setPill('locked', 'Tommy buzzed!');
+    showNotif('🔔 Tommy buzzed first!', 2500);
+    renderPlayers();
+  }, 3000);
+
+  setTimeout(() => {
+    showCountdown(3);
+    setTimeout(() => showCountdown(2), 1000);
+    setTimeout(() => showCountdown(1), 2000);
+    setTimeout(() => {
+      document.getElementById('countdownScreen').classList.remove('show');
+      players = players.map(p => ({...p, status: ''}));
+      setPill('active', 'Buzz in! New round!');
+      renderPlayers();
+    }, 3500);
+  }, 6500);
+
+  setTimeout(() => {
+    players = players.map((p,i) => p.name === 'Mom' ? {...p, score: p.score+1, status: 'correct'} : p);
+    setPill('locked', 'Mom got it right!');
+    showNotif('✅ Mom: +1 point!', 2500);
+    renderPlayers();
+  }, 11500);
+
+  setTimeout(() => {
+    players = players.map(p => ({...p, status: ''}));
+    setPill('active', 'New round — go!');
+    renderPlayers();
+  }, 15500);
+
+  setTimeout(simulateDemo, 16000);
+}
+</script>
+</body>
+</html>

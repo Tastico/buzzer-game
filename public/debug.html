@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head><title>Game WS Debug</title></head>
+<body style="font-family: sans-serif; padding: 20px; max-width: 700px;">
+<h2>🔍 Game Join Flow Debug</h2>
+<p>This tests the EXACT same flow as the game page.</p>
+<p>Server URL: <strong id="urlDisplay"></strong></p>
+<pre id="log" style="background:#1a1a2e;color:#0f0;padding:15px;border-radius:8px;margin-top:15px;min-height:300px;white-space:pre-wrap;font-size:13px"></pre>
+
+<script>
+var playerId = 'debug-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2,9);
+var url = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host;
+document.getElementById('urlDisplay').textContent = url;
+
+function log(msg) {
+  var pre = document.getElementById('log');
+  pre.textContent += new Date().toLocaleTimeString() + ' ' + msg + '\n';
+}
+
+log('Player ID: ' + playerId);
+log('Connecting to: ' + url);
+
+// Step 1: Connect
+var ws = new WebSocket(url);
+
+ws.onopen = function() {
+  log('✅ WebSocket OPENED');
+  log('connState -> connected');
+  
+  // Step 2: Send join (same format as game page)
+  var joinMsg = JSON.stringify({ type: 'join', name: 'DebugUser', profileUuid: playerId });
+  log('Sending: ' + joinMsg);
+  ws.send(joinMsg);
+};
+
+ws.onmessage = function(e) {
+  log('📨 RECEIVED: ' + e.data);
+  try {
+    var msg = JSON.parse(e.data);
+    if (msg.type === 'joined') {
+      log('✅ JOINED! Game should now show scoreboard.');
+      log('  Player name: ' + msg.player.name);
+      log('  Score: ' + msg.player.score);
+      log('  Phase: ' + (msg.gameState ? msg.gameState.phase : '?'));
+    }
+  } catch(err) {
+    log('  (parse error: ' + err.message + ')');
+  }
+};
+
+ws.onerror = function() {
+  log('❌ WebSocket ERROR');
+};
+
+ws.onclose = function(e) {
+  log('🔌 WebSocket CLOSED code=' + e.code);
+};
+
+// Timeout after 10 seconds
+setTimeout(function() {
+  log('⏰ 10 second timeout reached - no joined response');
+}, 10000);
+</script>
+</body>
+</html>

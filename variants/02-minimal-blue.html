@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Quiz Buzzer — Minimal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #ffffff;
+  min-height: 100vh;
+  color: #111;
+}
+.container { max-width: 640px; margin: 0 auto; padding: 16px; }
+
+/* HEADER */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 0 8px;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+}
+.top-bar h1 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #111;
+}
+.top-bar .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-green { background: #22c55e; }
+.dot-yellow { background: #f59e0b; }
+.dot-red { background: #ef4444; }
+.dot-gray { background: #d1d5db; }
+
+/* NAME ENTRY */
+.name-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  background: #fafafa;
+}
+.name-card h2 {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+  margin-bottom: 12px;
+}
+.name-card .input-row {
+  display: flex;
+  gap: 8px;
+}
+.name-card input {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: border 0.15s;
+}
+.name-card input:focus { border-color: #2563eb; }
+.name-card button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.name-card button:hover { background: #1d4ed8; }
+.name-card button:active { transform: scale(0.97); }
+
+/* GAME CARD (hidden until joined) */
+.game-area { display: none; }
+
+/* STATUS STRIP */
+.status-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #f3f4f6;
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
+.status-strip .indicator {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.indicator-active { background: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.4); }
+.indicator-waiting { background: #f59e0b; }
+.indicator-locked { background: #ef4444; }
+.indicator-idle { background: #9ca3af; }
+.status-strip .msg { font-size: 14px; font-weight: 500; color: #374151; }
+
+/* BUZZ BUTTON — centered, large */
+.buzz-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px 0 32px;
+}
+.buzz-main {
+  width: 200px; height: 200px;
+  border-radius: 50%;
+  border: 4px solid #e5e7eb;
+  background: white;
+  color: #111;
+  font-family: inherit;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  cursor: pointer;
+  transition: all 0.1s;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+  position: relative;
+}
+.buzz-main:active { transform: scale(0.92); }
+.buzz-main.enabled {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+  box-shadow: 0 4px 24px rgba(37,99,235,0.3);
+  animation: pulse-blue 1.5s ease-in-out infinite;
+}
+@keyframes pulse-blue {
+  0%, 100% { box-shadow: 0 4px 24px rgba(37,99,235,0.3); }
+  50% { box-shadow: 0 4px 40px rgba(37,99,235,0.5); }
+}
+.buzz-main:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+  box-shadow: none;
+  animation: none;
+  cursor: not-allowed;
+}
+.buzz-main .hint {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  opacity: 0.7;
+  margin-top: 6px;
+}
+
+/* SCOREBOARD */
+.score-section h3 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #9ca3af;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+.score-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.score-item:last-child { border-bottom: none; }
+.score-item.highlight-buzz { background: #fef9c3; }
+.score-item.highlight-correct { background: #dcfce7; }
+.score-rank { font-size: 12px; font-weight: 600; color: #d1d5db; width: 24px; }
+.score-name { flex: 1; font-size: 14px; font-weight: 500; }
+.score-name.you { font-weight: 700; color: #2563eb; }
+.score-pts { font-size: 14px; font-weight: 700; color: #374151; min-width: 40px; text-align: right; }
+.score-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.badge-first { background: #fef3c7; color: #d97706; }
+.badge-right { background: #dcfce7; color: #16a34a; }
+
+/* WHO BUZZED TOAST */
+.buzz-toast {
+  display: none;
+  position: fixed;
+  top: 24px; left: 50%; transform: translateX(-50%);
+  background: #111;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  z-index: 50;
+  white-space: nowrap;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  animation: slideDown 0.2s ease-out;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.buzz-toast.show { display: block; }
+
+/* COUNTDOWN OVERLAY */
+.countdown-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(17,17,17,0.9);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.countdown-bg.show { display: flex; }
+.countdown-bg .big-num {
+  font-size: 140px;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+  font-feature-settings: "tnum";
+}
+.countdown-bg .label {
+  font-size: 18px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 8px;
+}
+
+@media (max-width: 480px) {
+  .buzz-main { width: 160px; height: 160px; font-size: 24px; }
+  .name-card .input-row { flex-direction: column; }
+  .name-card button { width: 100%; }
+  .countdown-bg .big-num { font-size: 100px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <div class="top-bar">
+    <h1>QUIZ BUZZER</h1>
+    <span class="dot dot-green" id="statusIndicator"></span>
+  </div>
+
+  <!-- Name Entry -->
+  <div class="name-card" id="nameCard">
+    <h2>👤 Join the Game</h2>
+    <div class="input-row">
+      <input type="text" id="nameInput" placeholder="Your name..." maxlength="20" autocomplete="off">
+      <button onclick="joinGame()">Join</button>
+    </div>
+  </div>
+
+  <!-- Game Area -->
+  <div class="game-area" id="gameArea">
+    <!-- Status -->
+    <div class="status-strip" id="statusStrip">
+      <span class="indicator indicator-active" id="statusIndicatorEl"></span>
+      <span class="msg" id="statusMsg">Waiting for admin...</span>
+    </div>
+
+    <!-- Buzz Button -->
+    <div class="buzz-section">
+      <button class="buzz-main" id="buzzBtn" disabled>
+        BUZZ
+        <span class="hint">tap to answer</span>
+      </button>
+    </div>
+
+    <!-- Scoreboard -->
+    <div class="score-section">
+      <h3>🏆 Scoreboard</h3>
+      <div id="scoreList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="buzz-toast" id="buzzToast"></div>
+
+<!-- Countdown -->
+<div class="countdown-bg" id="countdownBg">
+  <div class="big-num" id="countdownNum">3</div>
+  <div class="label">Locked — get ready!</div>
+</div>
+
+<script>
+// ===== DEMO simulation for showing the variant =====
+let state = 'lobby';
+let myName = '';
+let players = [
+  {name: 'Alice', score: 3, status: ''},
+  {name: 'Bob', score: 2, status: ''},
+  {name: 'Charlie', score: 1, status: ''},
+  {name: 'Diana', score: 0, status: 'buzzed'},
+  {name: 'Eve', score: 0, status: ''},
+];
+
+function joinGame() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) return;
+  myName = name;
+  document.getElementById('nameCard').style.display = 'none';
+  document.getElementById('gameArea').style.display = 'block';
+  if (!players.find(p => p.name === name)) {
+    players.push({name, score: 0, status: ''});
+  }
+  updateScoreboard();
+  simulateDemo();
+}
+
+function updateScoreboard() {
+  const sorted = [...players].sort((a,b) => b.score - a.score);
+  const list = document.getElementById('scoreList');
+  list.innerHTML = sorted.map((p, i) => `
+    <div class="score-item ${p.status === 'buzzed' ? 'highlight-buzz' : ''} ${p.status === 'correct' ? 'highlight-correct' : ''}">
+      <span class="score-rank">#${i+1}</span>
+      <span class="score-name ${p.name === myName ? 'you' : ''}">${p.name}${p.name === myName ? ' (you)' : ''}</span>
+      <span class="score-pts">${p.score}</span>
+      ${p.status === 'buzzed' ? '<span class="score-badge badge-first">BUZZED</span>' : ''}
+      ${p.status === 'correct' ? '<span class="score-badge badge-right">✓</span>' : ''}
+    </div>
+  `).join('');
+}
+
+function setStatus(type, msg) {
+  const el = document.getElementById('statusIndicatorEl');
+  const txt = document.getElementById('statusMsg');
+  const btn = document.getElementById('buzzBtn');
+  el.className = 'indicator';
+  
+  switch(type) {
+    case 'lobby': el.classList.add('indicator-idle'); txt.textContent = 'Waiting for admin...'; btn.disabled = true; btn.innerHTML = 'BUZZ<span class="hint">waiting...</span>'; break;
+    case 'waiting': el.classList.add('indicator-waiting'); txt.textContent = 'Round starting... get ready!'; btn.disabled = true; btn.innerHTML = '—<span class="hint">stand by</span>'; break;
+    case 'active': el.classList.add('indicator-active'); txt.textContent = '🟢 Buzz in!'; btn.disabled = false; btn.className = 'buzz-main enabled'; btn.innerHTML = 'BUZZ<span class="hint">tap to answer</span>'; break;
+    case 'buzzed': el.classList.add('indicator-locked'); txt.textContent = '🔴 Someone buzzed!'; btn.disabled = true; btn.className = 'buzz-main'; btn.innerHTML = 'LOCKED<span class="hint">judge reviewing</span>'; break;
+  }
+}
+
+function showNumber(n) {
+  const bg = document.getElementById('countdownBg');
+  bg.classList.add('show');
+  document.getElementById('countdownNum').textContent = n;
+}
+
+function simulateDemo() {
+  setStatus('active');
+  updateScoreboard();
+
+  setTimeout(() => {
+    players = players.map(p => ({...p, status: p.name === 'Diana' ? 'buzzed' : ''}));
+    const toast = document.getElementById('buzzToast');
+    toast.textContent = '🔔 Diana buzzed!';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+    setStatus('buzzed');
+    updateScoreboard();
+  }, 3000);
+
+  setTimeout(() => {
+    showNumber(3);
+    setTimeout(() => showNumber(2), 1000);
+    setTimeout(() => showNumber(1), 2000);
+    setTimeout(() => {
+      document.getElementById('countdownBg').classList.remove('show');
+      players = players.map(p => ({...p, status: ''}));
+      setStatus('active');
+      updateScoreboard();
+    }, 3500);
+  }, 6500);
+
+  setTimeout(() => {
+    players = players.map(p => ({...p, status: p.name === 'Alice' ? 'correct' : ''}));
+    players = players.map((p,i) => p.name === 'Alice' ? {...p, score: p.score+1} : p);
+    const toast = document.getElementById('buzzToast');
+    toast.textContent = '✅ Alice got it right! +1 pt';
+    toast.classList.add('show');
+    setStatus('buzzed');
+    updateScoreboard();
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }, 12000);
+
+  setTimeout(() => {
+    players = players.map(p => ({...p, status: ''}));
+    setStatus('active');
+    updateScoreboard();
+  }, 16000);
+
+  setTimeout(simulateDemo, 16500);
+}
+</script>
+</body>
+</html>

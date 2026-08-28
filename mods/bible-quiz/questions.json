@@ -1,0 +1,160 @@
+{
+  "categories": [
+    {
+      "name": "Old Testament Beginnings",
+      "icon": "🌍",
+      "questions": [
+        {"q": "Who built the ark?","a":"Noah","d":"Genesis 6-9","type":"standard"},
+        {"q": "How many days did God create the world?","a":"6","d":"Genesis 1","type":"standard"},
+        {"q": "___ ate the forbidden fruit from the Tree of Knowledge.","a":"Eve","d":"Genesis 3","type":"fill"},
+        {"q": "Who was the first murderer?","a":"Cain","d":"Genesis 4","type":"standard"},
+        {"q": "How old was Methuselah when he died?","a":"969 years","d":"Genesis 5:27","type":"standard"},
+        {"q": "___ ___ led the Israelites out of Egypt.","a":"Moses","d":"Exodus 3-14","type":"fill"},
+        {"q": "What sea did Moses part?","a":"The Red Sea","d":"Exodus 14","type":"standard"},
+        {"q": "How many plagues struck Egypt?","a":"10","d":"Exodus 7-12","type":"standard"},
+        {"q": "God rained down ___ from heaven in the desert.","a":"manna","d":"Exodus 16","type":"fill"},
+        {"q": "What are the first five books of the Bible called?","a":"The Pentateuch / Torah","d":"Genesis-Deuteronomy","type":"standard"},
+        {"q": "Who received the Ten Commandments?","a":"Moses","d":"Exodus 20","type":"standard"},
+        {"q": "Which city's walls fell after marching around them?","a":"Jericho","d":"Joshua 6","type":"standard"},
+        {"q": "The sign of God's covenant with Noah was a ___","a":"rainbow","d":"Genesis 9","type":"fill"},
+        {"q": "How many days did it rain for the flood?","a":"40 days and 40 nights","d":"Genesis 7:12","type":"standard"},
+        {"q": "Where did the ark land?","a":"Mount Ararat","d":"Genesis 8:4","type":"standard"}
+      ]
+    },
+    {
+      "name": "Patriarchs & Prophets",
+      "icon": "👴",
+      "questions": [
+        {"q":"Who wrestled with God all night?","a":"Jacob","d":"Genesis 32","type":"standard"},
+        {"q":"Jacob's new name after wrestling was ___","a":"Israel","d":"Genesis 32:28","type":"fill"},
+        {"q":"Who was Abraham's promised son?","a":"Isaac","d":"Genesis 21","type":"standard"},
+        {"q":"Who sold his birthright for a bowl of stew?","a":"Esau","d":"Genesis 25","type":"standard"},
+        {"q":"How many sons did Jacob have?","a":"12","d":"Genesis 35","type":"standard"},
+        {"q":"___ was sold into slavery by his brothers.","a":"Joseph","d":"Genesis 37","type":"fill"},
+        {"q":"What did Pharaoh's dreams predict?","a":"7 years of plenty, 7 of famine","d":"Genesis 41","type":"standard"},
+        {"q":"Who was swallowed by a great fish?","a":"Jonah","d":"Jonah 1","type":"standard"},
+        {"q":"How many days was Jonah in the fish?","a":"3","d":"Jonah 1:17","type":"standard"},
+        {"q":"___ ___ ___ were thrown into a fiery furnace.","a":"Shadrach, Meshach, Abednego","d":"Daniel 3","type":"fill"},
+        {"q":"Who interpreted Nebuchadnezzar's dream?","a":"Daniel","d":"Daniel 2","type":"standard"},
+        {"q":"What wrote on the wall at Belshazzar's feast?","a":"A mysterious hand","d":"Daniel 5","type":"standard"},
+        {"q":"Who was taken to heaven in a whirlwind?","a":"Elijah","d":"2 Kings 2","type":"standard"},
+        {"q":"Who inherited Elijah's prophetic mantle?","a":"Elisha","d":"2 Kings 2","type":"standard"},
+        {"q":"Naaman washed in the ___ River to be healed.","a":"Jordan","d":"2 Kings 5","type":"fill"},
+        {"q":"Who was the weeping prophet?","a":"Jeremiah","d":"Book of Jeremiah","type":"standard"}
+      ]
+    },
+    {
+      "name": "Kings, Judges & Heroes",
+      "icon": "👑",
+      "questions": [
+        {"q":"Who was the strongest man in the Bible?","a":"Samson","d":"Judges 13-16","type":"standard"},
+        {"q":"Samson's hair was cut and he ___ his strength.","a":"lost","d":"Judges 16","type":"fill"},
+        {"q":"Who defeated Goliath with a sling and stone?","a":"David","d":"1 Samuel 17","type":"standard"},
+        {"q":"Who was Israel's first king?","a":"Saul","d":"1 Samuel 10","type":"standard"},
+        {"q":"Who was Israel's second king?","a":"David","d":"2 Samuel 2","type":"standard"},
+        {"q":"Who built the first temple in Jerusalem?","a":"Solomon","d":"1 Kings 6","type":"standard"},
+        {"q":"What did Solomon ask God for?","a":"Wisdom","d":"1 Kings 3","type":"standard"},
+        {"q":"Who became king after David?","a":"Solomon","d":"1 Kings 1","type":"standard"},
+        {"q":"Who was the first female judge of Israel?","a":"Deborah","d":"Judges 4","type":"standard"},
+        {"q":"___ was Ruth's mother-in-law.","a":"Naomi","d":"Ruth 1","type":"fill"},
+        {"q":"Who was David's father?","a":"Jesse","d":"1 Samuel 16","type":"standard"},
+        {"q":"Who anointed David as king?","a":"Samuel","d":"1 Samuel 16","type":"standard"}
+      ]
+    },
+    {
+      "name": "The Life of Jesus",
+      "icon": "✝️",
+      "questions": [
+        {"q":"Where was Jesus born?","a":"Bethlehem","d":"Luke 2","type":"standard"},
+        {"q":"Who were Jesus' earthly parents?","a":"Mary and Joseph","d":"Luke 2","type":"standard"},
+        {"q":"___ baptized Jesus in the Jordan River.","a":"John the Baptist","d":"Mark 1","type":"fill"},
+        {"q":"How many days did Jesus fast in the desert?","a":"40","d":"Matthew 4","type":"standard"},
+        {"q":"What was Jesus' first miracle?","a":"Turning water into wine","d":"John 2","type":"standard"},
+        {"q":"How many loaves and fish fed 5,000?","a":"5 loaves, 2 fish","d":"Matthew 14","type":"standard"},
+        {"q":"How many baskets were left over after feeding 5,000?","a":"12","d":"Matthew 14:20","type":"standard"},
+        {"q":"___ ___ ___ walked on water with Jesus.","a":"Peter","d":"Matthew 14","type":"fill"},
+        {"q":"What did Jesus say to the storm?","a":"Peace, be still","d":"Mark 4:39","type":"standard"},
+        {"q":"Who was raised from the dead after 4 days?","a":"Lazarus","d":"John 11","type":"standard"},
+        {"q":"How many apostles were there?","a":"12","d":"Matthew 10","type":"standard"},
+        {"q":"Which disciple was a tax collector?","a":"Matthew / Levi","d":"Matthew 9","type":"standard"},
+        {"q":"Who denied Jesus three times?","a":"Peter","d":"Matthew 26","type":"standard"},
+        {"q":"Who betrayed Jesus for 30 pieces of silver?","a":"Judas Iscariot","d":"Matthew 26","type":"standard"},
+        {"q":"What is the shortest verse in the Bible?","a":"Jesus wept","d":"John 11:35","type":"standard"},
+        {"q":"What is the Golden Rule?","a":"Do unto others as you would have them do unto you","d":"Matthew 7:12","type":"standard"},
+        {"q":"How many Beatitudes are there?","a":"8 (or 9)","d":"Matthew 5","type":"standard"},
+        {"q":"Jesus said: 'I am the way, the truth, and the ___'","a":"life","d":"John 14:6","type":"fill"},
+        {"q":"Jesus said: 'I am the ___ ___' (John 10:11)","a":"good shepherd","d":"John 10:11","type":"fill"},
+        {"q":"On the cross, Jesus said: '___ ___ ___'","a":"It is finished","d":"John 19:30","type":"fill"}
+      ]
+    },
+    {
+      "name": "New Testament & Church",
+      "icon": "🔥",
+      "questions": [
+        {"q":"Who wrote the book of Acts?","a":"Luke","d":"Acts 1:1","type":"standard"},
+        {"q":"Who was the first Christian martyr?","a":"Stephen","d":"Acts 7","type":"standard"},
+        {"q":"Which apostle replaced Judas?","a":"Matthias","d":"Acts 1","type":"standard"},
+        {"q":"What happened at Pentecost?","a":"The Holy Spirit descended as tongues of fire","d":"Acts 2","type":"standard"},
+        {"q":"Saul of Tarsus was blinded on the road to ___","a":"Damascus","d":"Acts 9","type":"fill"},
+        {"q":"What was Saul's name changed to?","a":"Paul","d":"Acts 13","type":"standard"},
+        {"q":"Which chapter is called the 'Love Chapter'?","a":"1 Corinthians 13","d":"1 Corinthians 13","type":"standard"},
+        {"q":"The fruit of the Spirit includes love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, and ___","a":"self-control","d":"Galatians 5:22-23","type":"fill"},
+        {"q":"The Armor of God includes the ___ of the Spirit (the Word of God)","a":"sword","d":"Ephesians 6:17","type":"fill"},
+        {"q":"How many books are in the New Testament?","a":"27","d":"Standard canon","type":"standard"},
+        {"q":"How many books are in the whole Bible?","a":"66","d":"39 OT + 27 NT","type":"standard"},
+        {"q":"Who wrote most of the New Testament epistles?","a":"Paul","d":"Pauline epistles","type":"standard"},
+        {"q":"The first three gospels are called the ___ Gospels","a":"synoptic","d":"Matthew, Mark, Luke","type":"fill"},
+        {"q":"Who had a vision of heaven on the island of Patmos?","a":"John","d":"Revelation 1","type":"standard"},
+        {"q":"What is the last book of the Bible?","a":"Revelation","d":"Revelation 22","type":"standard"}
+      ]
+    },
+    {
+      "name": "Numbers & Trivia",
+      "icon": "🔢",
+      "questions": [
+        {"q":"How many books in the Old Testament?","a":"39","d":"Standard canon","type":"standard"},
+        {"q":"What is the longest chapter in the Bible?","a":"Psalm 119 (176 verses)","d":"Psalm 119","type":"standard"},
+        {"q":"What is the longest book in the Bible?","a":"Psalms (150 chapters)","d":"Book of Psalms","type":"standard"},
+        {"q":"How many people did Jesus feed with 7 loaves?","a":"4,000","d":"Matthew 15","type":"standard"},
+        {"q":"How many wise men visited baby Jesus?","a":"3 (implied by the three gifts)","d":"Matthew 2","type":"standard"},
+        {"q":"How many seals are opened in Revelation?","a":"7","d":"Revelation 6-8","type":"standard"},
+        {"q":"How many trumpets sound in Revelation?","a":"7","d":"Revelation 8-11","type":"standard"},
+        {"q":"How many psalms did David write?","a":"73 (traditional attribution)","d":"Book of Psalms","type":"standard"},
+        {"q":"How many chapters does the longest book have?","a":"150 (Psalms)","d":"Book of Psalms","type":"standard"},
+        {"q":"How many years did Israel wander in the desert?","a":"40","d":"Numbers 14:33","type":"standard"}
+      ]
+    },
+    {
+      "name": "Prophecy & End Times",
+      "icon": "📜",
+      "questions": [
+        {"q":"Who saw a valley of dry bones come to life?","a":"Ezekiel","d":"Ezekiel 37","type":"standard"},
+        {"q":"The four living creatures in Revelation are: lion, ox, man, and ___","a":"eagle","d":"Revelation 4","type":"fill"},
+        {"q":"What is the New Jerusalem described as being made of?","a":"Gold, with gates of pearl","d":"Revelation 21","type":"standard"},
+        {"q":"How many horsemen are in the Apocalypse?","a":"4","d":"Revelation 6","type":"standard"},
+        {"q":"What is the mark of the beast identified as in Revelation?","a":"666","d":"Revelation 13:18","type":"standard"},
+        {"q":"Who wrote the book of Revelation?","a":"John","d":"Revelation 1:1","type":"standard"},
+        {"q":"The four beasts in Daniel's vision represent four ___","a":"kingdoms","d":"Daniel 7","type":"fill"},
+        {"q":"What did the statue in Nebuchadnezzar's dream represent?","a":"Four successive kingdoms","d":"Daniel 2","type":"standard"},
+        {"q":"The stone that broke the statue represents God's ___","a":"kingdom","d":"Daniel 2","type":"fill"},
+        {"q":"Who prophesied the coming of John the Baptist?","a":"Isaiah","d":"Isaiah 40:3","type":"standard"}
+      ]
+    },
+    {
+      "name": "Famous Verses",
+      "icon": "💬",
+      "questions": [
+        {"q":"'For God so loved the world that He gave His only begotten Son...' — John ___","a":"3:16","d":"John 3:16","type":"fill"},
+        {"q":"'I can do all things through Christ who strengthens me.' — Philippians ___:___","a":"4:13","d":"Philippians 4:13","type":"fill"},
+        {"q":"'The Lord is my shepherd; I shall not want.' — Psalm ___","a":"23","d":"Psalm 23","type":"fill"},
+        {"q":"'In the beginning, God created the heavens and the earth.' — Genesis ___","a":"1:1","d":"Genesis 1:1","type":"fill"},
+        {"q":"'Trust in the Lord with all your heart...' — Proverbs ___","a":"3:5","d":"Proverbs 3:5","type":"fill"},
+        {"q":"'The fear of the Lord is the beginning of ___'","a":"wisdom","d":"Proverbs 9:10","type":"fill"},
+        {"q":"'Be still, and know that I am God.' — Psalm ___","a":"46:10","d":"Psalm 46:10","type":"fill"},
+        {"q":"'Jesus wept.' — the ___ verse in the Bible.","a":"shortest","d":"John 11:35","type":"fill"},
+        {"q":"'The truth shall make you ___'","a":"free","d":"John 8:32","type":"fill"},
+        {"q":"'Thy word is a lamp unto my feet...' — Psalm ___","a":"119:105","d":"Psalm 119:105","type":"fill"}
+      ]
+    }
+  ]
+}

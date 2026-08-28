@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Buzz! — Game Show Style</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  min-height: 100vh;
+  color: #1a1a2e;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 600px; margin: 0 auto; padding: 16px; }
+
+/* HEADER */
+.header {
+  text-align: center;
+  padding: 20px 0 12px;
+}
+.header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #1a1a2e;
+}
+.header .subtitle {
+  font-size: 13px;
+  color: #8e8ea0;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* NAME ENTRY */
+.name-entry {
+  background: white;
+  border-radius: 16px;
+  padding: 24px 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.name-entry h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1a1a2e;
+}
+.name-entry input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e0e3e8;
+  border-radius: 12px;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #f8f9fb;
+}
+.name-entry input:focus {
+  border-color: #6c63ff;
+  background: white;
+}
+.name-entry button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  background: #6c63ff;
+  color: white;
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+.name-entry button:active { transform: scale(0.97); }
+
+/* BUZZ BUTTON — big glowing red */
+.buzz-area {
+  text-align: center;
+  padding: 20px 0;
+}
+.buzz-btn {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  border: none;
+  font-family: inherit;
+  font-size: 32px;
+  font-weight: 800;
+  cursor: pointer;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  background: linear-gradient(145deg, #ff4757, #e8354a);
+  box-shadow: 0 8px 32px rgba(255,71,87,0.35), inset 0 -4px 8px rgba(0,0,0,0.15), inset 0 4px 8px rgba(255,255,255,0.2);
+  transition: all 0.1s;
+  position: relative;
+}
+.buzz-btn:active {
+  transform: scale(0.93);
+  box-shadow: 0 4px 16px rgba(255,71,87,0.25);
+}
+.buzz-btn:disabled {
+  background: #d1d5db;
+  box-shadow: none;
+  cursor: not-allowed;
+  color: #9ca3af;
+  transform: none;
+}
+.buzz-btn .sub {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+/* STATUS BAR */
+.status-bar {
+  background: white;
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot.waiting { background: #f59e0b; }
+.status-dot.active { background: #22c55e; }
+.status-dot.locked { background: #ef4444; }
+.status-text { font-size: 14px; font-weight: 500; color: #4a4a5e; flex: 1; }
+
+/* SCOREBOARD */
+.scoreboard {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.scoreboard-title {
+  padding: 14px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #8e8ea0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #f8f9fb;
+  border-bottom: 1px solid #eee;
+}
+.player-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 18px;
+  border-bottom: 1px solid #f0f0f2;
+  transition: background 0.2s;
+}
+.player-row:last-child { border-bottom: none; }
+.player-row.buzzed {
+  background: #fef3c7;
+}
+.player-row.correct {
+  background: #dcfce7;
+}
+.player-rank {
+  font-size: 13px;
+  font-weight: 700;
+  color: #c0c0d0;
+  width: 28px;
+}
+.player-name {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a2e;
+}
+.player-score {
+  font-size: 16px;
+  font-weight: 700;
+  color: #6c63ff;
+  min-width: 40px;
+  text-align: right;
+}
+.player-status-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.badge-buzzed { background: #fef3c7; color: #d97706; }
+.badge-correct { background: #dcfce7; color: #16a34a; }
+
+/* COUNTDOWN OVERLAY */
+.countdown-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.countdown-overlay.show { display: flex; }
+.countdown-number {
+  font-size: 120px;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  line-height: 1;
+}
+.countdown-label {
+  font-size: 16px;
+  color: rgba(255,255,255,0.7);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+/* PLAYER BUZZED NOTIFICATION */
+.buzzed-notification {
+  display: none;
+  text-align: center;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  margin-bottom: 16px;
+}
+.buzzed-notification.show { display: block; }
+.buzzed-notification .name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+.buzzed-notification .label {
+  font-size: 14px;
+  color: #8e8ea0;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+  .buzz-btn { width: 180px; height: 180px; font-size: 26px; }
+  .container { padding: 12px; }
+  .countdown-number { font-size: 80px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>🔔 BUZZ!</h1>
+    <div class="subtitle">Game Show Buzzer System</div>
+  </div>
+
+  <!-- Name Entry -->
+  <div class="name-entry" id="nameEntry">
+    <h2>Enter your name to join</h2>
+    <input type="text" id="nameInput" placeholder="Your display name..." maxlength="20" autocomplete="off">
+    <button onclick="joinGame()">Join Game</button>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar" id="statusBar" style="display:none">
+    <div class="status-dot waiting" id="statusDot"></div>
+    <div class="status-text" id="statusText">Waiting for admin to start...</div>
+  </div>
+
+  <!-- Buzzer Notification (who buzzed) -->
+  <div class="buzzed-notification" id="buzzedNotif">
+    <div class="label">Buzzed First!</div>
+    <div class="name" id="buzzerName">—</div>
+  </div>
+
+  <!-- Buzz Button Area -->
+  <div class="buzz-area" id="buzzArea" style="display:none">
+    <button class="buzz-btn" id="buzzBtn" disabled>
+      BUZZ
+      <span class="sub">Tap to answer</span>
+    </button>
+  </div>
+
+  <!-- Scoreboard -->
+  <div class="scoreboard" id="scoreboard" style="display:none">
+    <div class="scoreboard-title">🏆 Scoreboard</div>
+    <div id="playerList"></div>
+  </div>
+</div>
+
+<!-- Countdown Overlay -->
+<div class="countdown-overlay" id="countdownOverlay">
+  <div class="countdown-number" id="countdownNumber">3</div>
+  <div class="countdown-label">Get ready to buzz!</div>
+</div>
+
+<script>
+// ====== MOCK DEMO ======
+let state = 'lobby'; // lobby | waiting | active | buzzed
+let myName = '';
+let players = [
+  {name: 'Alice', score: 2, status: ''},
+  {name: 'Bob', score: 1, status: ''},
+  {name: 'Charlie', score: 0, status: ''},
+  {name: 'Diana', score: 0, status: ''},
+];
+let buzzedPlayer = null;
+
+function joinGame() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) return;
+  myName = name;
+  document.getElementById('nameEntry').style.display = 'none';
+  document.getElementById('buzzArea').style.display = 'block';
+  document.getElementById('statusBar').style.display = 'flex';
+  document.getElementById('scoreboard').style.display = 'block';
+  // Check if user's name exists, if not add
+  if (!players.find(p => p.name === name)) {
+    players.push({name, score: 0, status: ''});
+  }
+  updateScoreboard();
+  simulateGame();
+}
+
+function updateScoreboard() {
+  const sorted = [...players].sort((a,b) => b.score - a.score);
+  const list = document.getElementById('playerList');
+  list.innerHTML = sorted.map((p, i) => `
+    <div class="player-row ${p.status === 'buzzed' ? 'buzzed' : ''} ${p.status === 'correct' ? 'correct' : ''}">
+      <div class="player-rank">#${i+1}</div>
+      <div class="player-name">${p.name} ${p.name === myName ? '(You)' : ''}</div>
+      <div class="player-score">${p.score} pts</div>
+      ${p.status === 'buzzed' ? '<div class="player-status-badge badge-buzzed">BUZZED</div>' : ''}
+      ${p.status === 'correct' ? '<div class="player-status-badge badge-correct">✓</div>' : ''}
+    </div>
+  `).join('');
+}
+
+function setState(newState) {
+  state = newState;
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  const btn = document.getElementById('buzzBtn');
+  const notif = document.getElementById('buzzedNotif');
+  const overlay = document.getElementById('countdownOverlay');
+
+  dot.className = 'status-dot';
+  notif.classList.remove('show');
+  overlay.classList.remove('show');
+
+  switch(newState) {
+    case 'lobby':
+      dot.classList.add('waiting');
+      text.textContent = 'Waiting for admin to start...';
+      btn.disabled = true;
+      btn.textContent = '⏳';
+      btn.querySelector('.sub').textContent = 'Wait for round';
+      break;
+    case 'waiting':
+      dot.classList.add('waiting');
+      text.textContent = 'Round starting soon...';
+      btn.disabled = true;
+      btn.textContent = '⏳';
+      btn.querySelector('.sub').textContent = 'Get ready!';
+      break;
+    case 'active':
+      dot.classList.add('active');
+      text.textContent = 'Buzz in! Tap to answer!';
+      btn.disabled = false;
+      btn.innerHTML = 'BUZZ<span class="sub">Tap to answer</span>';
+      break;
+    case 'buzzed':
+      dot.classList.add('locked');
+      text.textContent = buzzedPlayer === myName ? 'You buzzed first!' : `${buzzedPlayer} buzzed first!`;
+      btn.disabled = true;
+      btn.innerHTML = '🔒 LOCKED<span class="sub">Waiting for judge</span>';
+      if (buzzedPlayer) {
+        document.getElementById('buzzerName').textContent = buzzedPlayer;
+        notif.classList.add('show');
+      }
+      break;
+  }
+}
+
+function showCountdown(seconds) {
+  const overlay = document.getElementById('countdownOverlay');
+  const num = document.getElementById('countdownNumber');
+  overlay.classList.add('show');
+  num.textContent = seconds;
+}
+
+// Simulate game flow for demo
+function simulateGame() {
+  setTimeout(() => {
+    setState('active');
+    updateScoreboard();
+  }, 2000);
+
+  // Simulate someone buzzing after 4s
+  setTimeout(() => {
+    buzzedPlayer = players[Math.floor(Math.random() * players.length)].name;
+    players = players.map(p => ({...p, status: p.name === buzzedPlayer ? 'buzzed' : ''}));
+    setState('buzzed');
+    updateScoreboard();
+  }, 4500);
+
+  // Simulate wrong answer after 3s
+  setTimeout(() => {
+    showCountdown(3);
+    setTimeout(() => showCountdown(2), 1000);
+    setTimeout(() => showCountdown(1), 2000);
+    setTimeout(() => {
+      players = players.map(p => ({...p, status: ''}));
+      buzzedPlayer = null;
+      setState('active');
+      updateScoreboard();
+    }, 3500);
+  }, 8000);
+
+  // Simulate right answer
+  setTimeout(() => {
+    const r = Math.floor(Math.random() * players.length);
+    buzzedPlayer = players[r].name;
+    players[r].score += 1;
+    players = players.map((p, i) => ({...p, status: i === r ? 'correct' : ''}));
+    setState('buzzed');
+    updateScoreboard();
+  }, 14000);
+
+  // Next round
+  setTimeout(() => {
+    players = players.map(p => ({...p, status: ''}));
+    buzzedPlayer = null;
+    setState('active');
+    updateScoreboard();
+  }, 18000);
+
+  // Loop
+  setTimeout(() => simulateGame(), 18500);
+}
+</script>
+</body>
+</html>

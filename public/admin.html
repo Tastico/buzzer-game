@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Admin — Buzz! Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f0f2f5;color:#1a1a2e;min-height:100vh;-webkit-font-smoothing:antialiased}
+.container{max-width:900px;margin:0 auto;padding:16px}
+
+/* Server banner */
+.banner{background:linear-gradient(135deg,#6c63ff,#4a3fcf);color:#fff;border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.banner h1{font-size:18px;font-weight:700}
+.banner .info{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:13px}
+.banner .info span{background:rgba(255,255,255,.15);padding:4px 10px;border-radius:6px;font-weight:500}
+.server-ip{font-family:monospace;font-size:14px;cursor:pointer}
+.server-ip:hover{opacity:.8}
+
+/* Phase */
+.phase-bar{background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.phase-label{font-size:14px;font-weight:600;color:#6b7280;display:flex;align-items:center;gap:8px}
+.phase-badge{padding:4px 14px;border-radius:999px;font-size:13px;font-weight:600}
+.ph-lobby{background:#f3f4f6;color:#6b7280}
+.ph-active{background:#dcfce7;color:#16a34a}
+.ph-countdown{background:#fef3c7;color:#d97706}
+.ph-judged{background:#fef9c3;color:#a16207}
+.ph-frozen{background:#fee2e2;color:#dc2626}
+.ph-ended{background:#e0e7ff;color:#4338ca}
+.round-num{font-size:13px;color:#6b7280}
+
+/* Judge panel */
+.judge-panel{display:none;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;padding:16px;margin-bottom:14px;text-align:center}
+.judge-panel.show{display:block}
+.judge-panel h2{font-size:18px;font-weight:700;color:#92400e;margin-bottom:4px}
+.judge-panel .buzzer-name{font-size:28px;font-weight:800;color:#78350f;margin:8px 0}
+.judge-actions{display:flex;gap:12px;justify-content:center;margin-top:10px}
+.btn{min-width:120px;justify-content:center}
+
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:700px){.grid-2{grid-template-columns:1fr}}
+
+/* Card */
+.card{background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card h3{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e5e7eb}
+
+/* Buttons */
+.btn-group{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.btn{padding:8px 14px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:transform .1s,background .15s;display:inline-flex;align-items:center;gap:4px}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:#6c63ff;color:#fff}
+.btn-primary:hover{background:#5a52e0}
+.btn-success{background:#22c55e;color:#fff}
+.btn-success:hover{background:#16a34a}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-danger:hover{background:#dc2626}
+.btn-outline{background:transparent;border:1px solid #e5e7eb;color:#1a1a2e}
+.btn-outline:hover{background:#f9fafb}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-block{width:100%}
+
+/* Timer input */
+.timer-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.timer-row input{width:70px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;text-align:center;font-family:inherit}
+.timer-row label{font-size:13px;color:#6b7280;font-weight:500}
+
+/* Player rows */
+.p-row{display:flex;align-items:center;padding:6px 0;border-bottom:1px solid #f3f4f6;gap:6px}
+.p-row:last-child{border-bottom:none}
+.p-name{flex:1;font-size:14px;font-weight:500}
+.p-score{font-size:14px;font-weight:700;color:#6c63ff;min-width:30px;text-align:center}
+.p-in-name{width:100px;padding:4px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;font-family:inherit}
+.p-in-score{width:50px;padding:4px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:13px;text-align:center;font-family:inherit}
+.p-btn{padding:4px 8px;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+.p-btn-save{background:#dbeafe;color:#1d4ed8}
+.p-btn-save:hover{background:#bfdbfe}
+.p-btn-kick{background:#fee2e2;color:#dc2626}
+.p-btn-kick:hover{background:#fecaca}
+
+/* Theme */
+.theme-group{display:flex;gap:6px}
+.theme-btn{padding:6px 10px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500;font-family:inherit;transition:all .15s;background:#fff;flex:1;text-align:center}
+.theme-btn:hover{border-color:#6c63ff}
+.theme-btn.active{border-color:#6c63ff;background:#eef2ff;color:#6c63ff;font-weight:600}
+.t-dot{width:10px;height:10px;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:4px}
+
+/* History */
+.h-item{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:13px}
+.h-item:last-child{border-bottom:none}
+.h-round{color:#6b7280;font-weight:600;min-width:36px}
+.h-player{flex:1}
+.h-result{padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
+.hr-correct{background:#dcfce7;color:#16a34a}
+.hr-wrong{background:#fee2e2;color:#dc2626}
+
+/* Connection status */
+.conn-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.conn-ok{background:#22c55e}
+.conn-err{background:#ef4444}
+.conn-wait{background:#f59e0b;animation:breathe 1.5s infinite}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.4}}
+
+.empty{text-align:center;padding:16px;color:#6b7280;font-size:14px}
+
+/* ── Login Screen ── */
+.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e,#16213e);z-index:500;display:flex;justify-content:center;align-items:center}
+.login-box{background:#fff;border-radius:16px;padding:32px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,.3);text-align:center}
+.login-box h2{font-size:20px;color:#1a1a2e;margin-bottom:8px}
+.login-box p{font-size:13px;color:#6b7280;margin-bottom:16px}
+.login-box input{width:100%;padding:12px 14px;border:2px solid #e5e7eb;border-radius:10px;font-size:15px;font-family:inherit;outline:none;margin-bottom:12px;transition:border .2s}
+.login-box input:focus{border-color:#6c63ff}
+.login-box button{width:100%;padding:12px;border:none;border-radius:10px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;background:linear-gradient(135deg,#6c63ff,#4a3fcf);color:#fff;transition:transform .1s}
+.login-box button:active{transform:scale(.97)}
+.login-error{color:#ef4444;font-size:13px;margin-top:8px;display:none}
+
+/* ── Buzzer Timer ── */
+.buzzer-timer{font-size:14px;font-weight:600;color:#92400e;margin-top:4px}
+
+/* ── Teams Mode ── */
+.toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.toggle{position:relative;width:44px;height:24px;background:#e5e7eb;border-radius:12px;cursor:pointer;transition:background .2s;border:none;flex-shrink:0}
+.toggle.active{background:#6c63ff}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15);transition:transform .2s}
+.toggle.active::after{transform:translateX(20px)}
+.toggle-label{font-size:13px;font-weight:600;color:#6b7280}
+
+.team-columns{display:flex;gap:10px;overflow-x:auto;padding:4px 0;min-height:120px}
+.team-col{flex:1;min-width:140px;background:#f9fafb;border-radius:10px;padding:8px;border:2px dashed #e5e7eb;transition:border-color .15s;cursor:pointer}
+.team-col:hover{border-color:#6c63ff}
+.team-col.drag-over{border-color:#6c63ff;background:#eef2ff}
+.team-col-header{display:flex;align-items:center;gap:6px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e5e7eb}
+.team-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.team-col-name{font-size:12px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151}
+.team-col-score{font-size:13px;font-weight:800;color:#6c63ff}
+.team-player{font-size:11px;padding:4px 6px;background:#fff;border-radius:6px;border:1px solid #e5e7eb;margin-bottom:3px;cursor:grab;display:flex;align-items:center;gap:4px;user-select:none}
+.team-player.selected{background:#eef2ff;border-color:#6c63ff;box-shadow:0 0 0 2px rgba(108,99,255,.3)}
+.team-player:active{cursor:grabbing}
+.team-player .tp-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.team-player .tp-remove{font-size:10px;color:#ef4444;cursor:pointer;padding:2px;border-radius:4px;line-height:1}
+.team-player .tp-remove:hover{background:#fee2e2}
+
+.unassigned-area{min-height:60px;padding:8px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;margin-top:6px}
+.unassigned-area .team-player{margin-bottom:4px}
+.unassigned-area .team-player:last-child{margin-bottom:0}
+
+.team-ctrl{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.team-ctrl input{flex:1;min-width:80px;padding:5px 8px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:inherit}
+.team-ctrl .btn{padding:5px 10px;font-size:11px;min-width:auto}
+
+</style>
+</head>
+<body>
+<!-- ── Login Screen ── -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <h2>🔐 Admin Login</h2>
+    <p>Enter the admin password to continue</p>
+    <input type="password" id="loginPass" placeholder="Password..." onkeydown="if(event.key==='Enter')doLogin()">
+    <button id="loginBtn" onclick="doLogin()">🔓 Login</button>
+    <div class="login-error" id="loginError">Wrong password</div>
+  </div>
+</div>
+
+<div class="container" id="adminContainer" style="display:none">
+  <div class="banner">
+    <h1>🎛️ Game Control</h1>
+    <div class="info">
+      <span><span class="conn-dot conn-wait" id="connDot"></span><span id="connLabel">Connecting...</span></span>
+      <span>🖥️ <span class="server-ip" id="serverIp" onclick="copyIP()">—</span></span>
+      <span>🔌 Port: <span id="serverPort">—</span></span>
+      <span>👥 <span id="playerCount">0</span></span>
+      <span><a href="/qr-code" target="_blank" style="color:rgba(255,255,255,.8);text-decoration:none;font-size:12px">📱 QR</a></span>
+    </div>
+  </div>
+
+  <div class="phase-bar">
+    <div class="phase-label">
+      <span class="phase-badge ph-lobby" id="phaseBadge">LOBBY</span>
+      <span class="round-num" id="roundDisplay">Round 0</span>
+    </div>
+    <div style="display:flex;gap:4px">
+      <button class="btn btn-sm btn-danger" onclick="doFreeze()">⏸️ Freeze</button>
+      <button class="btn btn-sm btn-outline" onclick="doResetAll()">🔄 Reset</button>
+    </div>
+  </div>
+
+  <div class="judge-panel" id="judgePanel">
+    <h2>🔔 Player Buzzed!</h2>
+    <div class="buzzer-name" id="judgeName">—</div>
+    <div class="buzzer-timer" id="buzzerTimer">⏱️ 0.0s</div>
+    <p style="font-size:14px;color:#92400e">Did they get it right?</p>
+    <div class="judge-actions">
+      <button class="btn btn-success" onclick="doRight()">✅ Right!</button>
+      <button class="btn btn-danger" onclick="doWrong()">❌ Wrong</button>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <h3>🎮 Game</h3>
+        <div class="btn-group">
+          <button class="btn btn-primary start-btn" onclick="doStart(0)">▶️ Start Round</button>
+          <button class="btn btn-outline start-btn" onclick="doStartWithDelay()">⏱️ + Timer</button>
+        </div>
+        <div class="timer-row">
+          <label>Countdown (sec):</label>
+          <input type="number" id="delayInput" value="10" min="0" max="60">
+        </div>
+      </div>
+      <div class="card">
+        <h3>👤 Players <span id="pcLabel" style="font-weight:400;text-transform:none">(0)</span></h3>
+        <div id="playerArea"><div class="empty">Waiting for players...</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <h3>⚡ Actions</h3>
+        <div class="btn-group">
+          <button class="btn btn-primary btn-sm" onclick="doEndGame()">🏆 End Game</button>
+          <button class="btn btn-outline btn-sm" onclick="doExport()">📥 Export</button>
+          <button class="btn btn-outline btn-sm" onclick="doUnfreeze()">▶️ Unfreeze</button>
+          <button class="btn btn-sm" id="teamsModeBtn" style="background:#6366f1;color:#fff" onclick="toggleTeamsMode()">👥 Teams: Off</button>
+        </div>
+      </div>
+      <div class="card" id="teamsCard" style="margin-bottom:14px;display:none">
+        <h3>👥 Teams <span id="teamModeLabel" style="font-weight:400;text-transform:none">(ON)</span></h3>
+        <div class="toggle-row">
+          <button class="toggle active" id="teamsToggle" onclick="toggleTeamsMode()"></button>
+          <span class="toggle-label" id="teamsToggleLabel">On</span>
+        </div>
+        <div id="teamsArea">
+          <div class="unassigned-area" id="unassignedPlayers"></div>
+          <div class="team-columns" id="teamColumns"></div>
+        </div>
+        <div class="team-ctrl">
+          <input type="text" id="newTeamInput" placeholder="Team name..." maxlength="20">
+          <button class="btn btn-sm btn-primary" onclick="addTeam()">+ Add Team</button>
+          <button class="btn btn-sm btn-outline" onclick="doResetTeams()">🔄 Reset</button>
+        </div>
+      </div>
+      <div class="card" id="modsCard" style="display:none;margin-bottom:14px">
+        <h3>🧩 Mods <span id="modCountLabel" style="font-weight:400;text-transform:none">(0)</span></h3>
+        <div id="modsArea"><div class="empty">No mods installed</div></div>
+        <div style="display:flex;gap:6px;margin-top:8px">
+          <button class="btn btn-sm btn-outline" onclick="doRefreshMods()">🔄 Reload Mods</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📋 History</h3>
+        <div id="historyArea"><div class="empty">No rounds yet</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let ws = null, players = [], gameState = {phase:'lobby',roundNumber:0,teamsMode:false}, roundHistory = [], teams = [];
+let mods = [], activeMod = null, loadedModAdminUI = null;
+let dragPlayerId = null;
+let buzzerTimerInterval = null;
+
+// ── Login ──
+const SAVED_PASS = sessionStorage.getItem('buzzerAdminPass');
+if (SAVED_PASS) {
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('adminContainer').style.display = 'block';
+  connect(SAVED_PASS);
+}
+
+function doLogin() {
+  const pass = document.getElementById('loginPass').value;
+  if (!pass) return;
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginBtn').disabled = true;
+  document.getElementById('loginBtn').textContent = '⏳ Connecting...';
+  sessionStorage.setItem('buzzerAdminPass', pass);
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('adminContainer').style.display = 'block';
+  connect(pass);
+}
+
+function connect(password) {
+  const url = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host;
+  ws = new WebSocket(url);
+  ws.onopen = () => {
+    setConnStatus('ok','Connected');
+    ws.send(JSON.stringify({type:'admin_register', password: password || SAVED_PASS || ''}));
+  };
+  ws.onmessage = e => { try { handleMessage(JSON.parse(e.data)); } catch(e){} };
+  ws.onclose = () => {
+    if (document.getElementById('adminContainer').style.display !== 'none') {
+      setConnStatus('err','Reconnecting...');
+      setTimeout(() => connect(sessionStorage.getItem('buzzerAdminPass')), 3000);
+    }
+  };
+  ws.onerror = () => {
+    // Connection failed (server not running) — show login screen with error
+    const container = document.getElementById('adminContainer');
+    const overlay = document.getElementById('loginOverlay');
+    if (container && overlay) {
+      container.style.display = 'none';
+      overlay.style.display = 'flex';
+    }
+    document.getElementById('loginBtn').disabled = false;
+    document.getElementById('loginBtn').textContent = '🔓 Login';
+    document.getElementById('loginError').textContent = '❌ Could not reach server. Is it running?';
+    document.getElementById('loginError').style.display = 'block';
+    ws.close();
+  };
+}
+
+function handleMessage(msg) {
+  switch (msg.type) {
+    case 'admin_error':
+      sessionStorage.removeItem('buzzerAdminPass');
+      document.getElementById('loginBtn').disabled = false;
+      document.getElementById('loginBtn').textContent = '🔓 Login';
+      document.getElementById('loginError').textContent = msg.message || 'Wrong password';
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('loginOverlay').style.display = 'flex';
+      document.getElementById('adminContainer').style.display = 'none';
+      break;
+    case 'admin_state':
+      players = msg.players || []; gameState = msg.gameState || gameState; roundHistory = msg.roundHistory || [];
+      if (msg.teamsMode !== undefined) gameState.teamsMode = msg.teamsMode;
+      if (msg.teams) teams = msg.teams;
+      if (msg.mods) mods = msg.mods;
+      if (msg.activeMod !== undefined) { activeMod = msg.activeMod; loadModAdminUI(msg.activeMod); }
+      if (msg.serverInfo) { document.getElementById('serverIp').textContent = msg.serverInfo.ip; document.getElementById('serverPort').textContent = msg.serverInfo.port; }
+      if (gameState.buzzedPlayer) showJudgePanel(gameState.buzzedPlayer.name);
+      else hideJudgePanel();
+      break;
+    case 'teams_update':
+      if (msg.teams) teams = msg.teams;
+      break;
+    case 'mods_update':
+      if (msg.mods) mods = msg.mods;
+      if (msg.activeMod !== undefined) activeMod = msg.activeMod;
+      if (msg.error) showAdminBanner('⚠️ ' + msg.error, '#fee2e2', '#dc2626');
+      // Load/unload admin-ui.js for active mod
+      loadModAdminUI(msg.activeMod);
+      break;
+    case 'players_update': players = msg.players || []; if (msg.teams) teams = msg.teams; break;
+    case 'player_joined': break;
+    case 'player_left': break;
+    case 'player_buzzed':
+      gameState.buzzedPlayer = {name: msg.player, ip: msg.ip};
+      gameState.phase = 'judged';
+      showJudgePanel(msg.player);
+      // Start local timer tick
+      clearInterval(buzzerTimerInterval);
+      const startTime = Date.now();
+      buzzerTimerInterval = setInterval(() => {
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        document.getElementById('buzzerTimer').textContent = '⏱️ ' + elapsed + 's';
+      }, 200);
+      break;
+    case 'buzzer_timer':
+      // Server-synced timer
+      document.getElementById('buzzerTimer').textContent = '⏱️ ' + msg.elapsed + 's';
+      break;
+    case 'judge_result':
+      hideJudgePanel(); gameState.buzzedPlayer = null;
+      clearInterval(buzzerTimerInterval); buzzerTimerInterval = null;
+      if (msg.roundEntry) roundHistory.push(msg.roundEntry);
+      if (msg.teams) teams = msg.teams;
+      break;
+    case 'phase_change':
+      gameState.phase = msg.phase;
+      if (msg.round !== undefined) gameState.roundNumber = msg.round;
+      if (msg.phase === 'active' || msg.phase === 'lobby' || msg.phase === 'frozen' || msg.phase === 'ended') {
+        hideJudgePanel();
+        clearInterval(buzzerTimerInterval); buzzerTimerInterval = null;
+      }
+      if (msg.phase === 'lobby' || msg.phase === 'ended') gameState.buzzedPlayer = null;
+      break;
+    case 'correct_answer': case 'wrong_answer': break;
+    case 'export_data': downloadText(msg.data, 'scores.txt'); break;
+    case 'game_ended':
+      if (msg.top3) {
+        showAdminBanner(`🏆 Game Over! #1 ${msg.top3[0]?.name || '?'}`, '#e0e7ff', '#4338ca');
+      }
+      break;
+    case 'teams_mode':
+      gameState.teamsMode = msg.enabled;
+      if (msg.teams) teams = msg.teams;
+      break;
+    case 'teams_update':
+      if (msg.teams) teams = msg.teams;
+      break;
+  }
+  refreshUI();
+}
+
+function refreshUI() {
+  // Phase badge
+  const badge = document.getElementById('phaseBadge');
+  badge.className = 'phase-badge ph-' + (gameState.phase || 'lobby');
+  badge.textContent = (gameState.phase || 'lobby').toUpperCase();
+  document.getElementById('roundDisplay').textContent = 'Round ' + (gameState.roundNumber || 0);
+  document.getElementById('playerCount').textContent = players.length;
+  document.getElementById('pcLabel').textContent = '(' + players.length + ')';
+
+  // Disable start buttons if round in progress or game ended
+  const canStart = gameState.phase === 'lobby';
+  document.querySelectorAll('.start-btn').forEach(b => {
+    b.disabled = !canStart;
+    b.style.opacity = canStart ? '1' : '.4';
+    b.style.cursor = canStart ? 'pointer' : 'not-allowed';
+  });
+
+  // Players
+  const area = document.getElementById('playerArea');
+  if (!players.length) { area.innerHTML = '<div class="empty">Waiting for players...</div>'; }
+  else {
+    area.innerHTML = players.map(p => `<div class="p-row">
+      <span class="p-name">${esc(p.name)}</span>
+      <span class="p-score">${p.score}</span>
+      <input class="p-in-name" value="${esc(p.name)}" onchange="updatePlayer('${p.ip}','${p.profileUuid || ''}','name',this.value)">
+      <input class="p-in-score" value="${p.score}" type="number" onchange="updatePlayer('${p.ip}','${p.profileUuid || ''}','score',this.value)">
+      <button class="p-btn p-btn-kick" onclick="kickPlayer('${p.ip}','${p.profileUuid || ''}')">✕</button>
+    </div>`).join('');
+  }
+
+  // History
+  const ha = document.getElementById('historyArea');
+  if (!roundHistory.length) { ha.innerHTML = '<div class="empty">No rounds yet</div>'; }
+  else {
+    ha.innerHTML = [...roundHistory].reverse().slice(0,20).map(h => `<div class="h-item">
+      <span class="h-round">R${h.round}</span><span class="h-player">${esc(h.player)}</span>
+      <span class="h-result ${h.result === 'correct' ? 'hr-correct' : 'hr-wrong'}">${h.result === 'correct' ? '✅ Right' : '❌ Wrong'}</span>
+    </div>`).join('');
+  }
+
+  // Teams UI visibility
+  const teamsCard = document.getElementById('teamsCard');
+  const teamsBtn = document.getElementById('teamsModeBtn');
+  if (gameState.teamsMode) {
+    teamsCard.style.display = 'block';
+    if (teamsBtn) teamsBtn.textContent = '👥 Teams: On';
+    document.getElementById('teamsToggle').classList.add('active');
+    document.getElementById('teamsToggleLabel').textContent = 'On';
+    renderTeams();
+  } else {
+    teamsCard.style.display = 'none';
+    if (teamsBtn) teamsBtn.textContent = '👥 Teams: Off';
+  }
+
+  // Mods card visibility
+  renderMods();
+}
+
+// ── Teams ──
+const TEAM_COLORS = ['#6366f1','#ef4444','#22c55e','#f59e0b','#ec4899','#06b6d4','#a855f7','#f97316'];
+
+function renderTeams() {
+  if (!gameState.teamsMode) return;
+  const unassigned = document.getElementById('unassignedPlayers');
+  const columns = document.getElementById('teamColumns');
+
+  // Get teams from server state (or use local if no server data)
+  const currentTeams = teams.length > 0 ? teams : [];
+  const assignedIds = new Set();
+  currentTeams.forEach(t => (t.playerIds || []).forEach(id => assignedIds.add(id)));
+
+  // Unassigned players — click to select
+  const unassignedPlayers = players.filter(p => !assignedIds.has(p.profileUuid));
+  unassigned.innerHTML = '<div style="font-size:11px;color:#9ca3af;font-weight:600;margin-bottom:4px">Unassigned</div>' +
+    (unassignedPlayers.length === 0 ? '<div style="font-size:11px;color:#d1d5db;text-align:center;padding:8px">—</div>' :
+      unassignedPlayers.map(p => `<div class="team-player ${dragPlayerId === p.profileUuid ? 'selected' : ''}" data-playerid="${esc(p.profileUuid)}" onclick="selectPlayer('${esc(p.profileUuid)}')">
+        <span class="tp-name">${esc(p.name)}</span>
+      </div>`).join(''));
+
+  // Team columns — click to assign
+  columns.innerHTML = currentTeams.map((t, i) => {
+    const color = t.color || TEAM_COLORS[i % TEAM_COLORS.length];
+    const teamPlayers = players.filter(p => (t.playerIds || []).includes(p.profileUuid));
+    return `<div class="team-col" onclick="assignToTeam(${i})">
+      <div class="team-col-header">
+        <span class="team-dot" style="background:${color}"></span>
+        <span class="team-col-name">${esc(t.name)}</span>
+        <span class="team-col-score">${t.score || 0}</span>
+      </div>
+      <div style="min-height:40px">
+        ${teamPlayers.length === 0 ? '<div style="font-size:11px;color:#d1d5db;text-align:center;padding:8px">Click team to assign</div>' :
+          teamPlayers.map(p => `<div class="team-player" data-playerid="${esc(p.profileUuid)}">
+            <span class="tp-name">${esc(p.name)}</span>
+            <span class="tp-remove" onclick="event.stopPropagation();removeFromTeam('${esc(p.profileUuid)}', ${i})">✕</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleTeamsMode() {
+  const newVal = !gameState.teamsMode;
+  gameState.teamsMode = newVal;
+  document.getElementById('teamsToggle').classList.toggle('active', newVal);
+  document.getElementById('teamsToggleLabel').textContent = newVal ? 'On' : 'Off';
+  document.getElementById('teamsModeBtn').textContent = '👥 Teams: ' + (newVal ? 'On' : 'Off');
+  // Show/hide teams card immediately (don't wait for server round-trip)
+  document.getElementById('teamsCard').style.display = newVal ? 'block' : 'none';
+  if (!newVal) {
+    teams = [];
+  }
+  try{ws.send(JSON.stringify({type:'set_teams_mode', enabled: newVal}))}catch(e){}
+}
+
+function addTeam() {
+  const input = document.getElementById('newTeamInput');
+  const name = input.value.trim();
+  if (!name) return;
+  teams.push({name, color: TEAM_COLORS[teams.length % TEAM_COLORS.length], playerIds: [], score: 0});
+  input.value = '';
+  sendTeams();
+}
+
+function doResetTeams() {
+  teams = [];
+  sendTeams();
+}
+
+function removeFromTeam(profileUuid, teamIdx) {
+  if (!teams[teamIdx]) return;
+  teams[teamIdx].playerIds = teams[teamIdx].playerIds.filter(id => id !== profileUuid);
+  sendTeams();
+}
+
+function sendTeams() {
+  const payload = teams.map(t => ({
+    name: t.name,
+    playerIds: t.playerIds || [],
+  }));
+  try{ws.send(JSON.stringify({type:'set_teams', teams: payload}))}catch(e){}
+}
+
+// ── Mods ──
+function renderMods() {
+  const card = document.getElementById('modsCard');
+  const area = document.getElementById('modsArea');
+  const countLabel = document.getElementById('modCountLabel');
+  if (!area) return;
+
+  if (!mods || mods.length === 0) {
+    if (card) card.style.display = 'none';
+    return;
+  }
+  if (card) card.style.display = 'block';
+  countLabel.textContent = '(' + mods.length + ')';
+
+  area.innerHTML = mods.map(m => {
+    const isActive = activeMod === m.id;
+    const isEnabled = m.enabled !== false;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f3f4f6;font-size:13px">
+      <span style="font-size:16px">${m.icon || '🧩'}</span>
+      <span style="flex:1;font-weight:${isActive?'700':'500'};color:${isActive?'#6c63ff':'#374151'}">
+        ${esc(m.name)}${isActive ? ' <span style="font-size:10px;background:#eef2ff;color:#6c63ff;padding:2px 6px;border-radius:4px;font-weight:600">ACTIVE</span>' : ''}
+      </span>
+      <span style="font-size:11px;color:#9ca3af;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.description || '')}</span>
+      <span style="font-size:10px;color:#9ca3af;min-width:30px;text-align:right">v${m.version || '1.0'}</span>
+      <button class="btn btn-sm ${isEnabled ? 'btn-outline' : 'btn-primary'}" onclick="doToggleMod('${esc(m.id)}')" style="min-width:60px">
+        ${isEnabled ? '🔴 Disable' : '🟢 Enable'}
+      </button>
+      <button class="btn btn-sm ${isActive ? 'btn-danger' : 'btn-primary'}" onclick="doSetActiveMod('${isActive ? '' : esc(m.id)}')" ${!isEnabled ? 'disabled style="opacity:.4"' : ''} style="min-width:60px">
+        ${isActive ? '⏹️ Stop' : '▶️ Activate'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function doSetActiveMod(modId) {
+  try{ws.send(JSON.stringify({type:'set_active_mod', modId: modId || null}))}catch(e){}
+}
+
+function doToggleMod(modId) {
+  const m = mods.find(x => x.id === modId);
+  if (!m) return;
+  const action = (m.enabled !== false) ? 'disable_mod' : 'enable_mod';
+  try{ws.send(JSON.stringify({type: action, modId}))}catch(e){}
+}
+
+function doRefreshMods() {
+  try{ws.send(JSON.stringify({type:'refresh_mods'}))}catch(e){}
+  showAdminBanner('🔄 Refreshing mods...', '#e0e7ff', '#4338ca');
+}
+
+// ── Mod UI script loader ──
+function loadModAdminUI(modId) {
+  // Unload previous mod UI
+  if (loadedModAdminUI && loadedModAdminUI !== modId) {
+    var prevScript = document.getElementById('modAdminScript');
+    if (prevScript) prevScript.remove();
+    // Remove any injected mod UI containers
+    var bqPanel = document.getElementById('bqAdminPanel');
+    if (bqPanel) bqPanel.remove();
+    loadedModAdminUI = null;
+  }
+  if (!modId) return;
+  // Check if this mod has admin-ui.js
+  var m = mods.find(function(x) { return x.id === modId; });
+  if (!m || !m.hasAdminUI) return;
+  if (loadedModAdminUI === modId) return; // Already loaded
+  loadedModAdminUI = modId;
+  // Dynamically load the script
+  var script = document.createElement('script');
+  script.id = 'modAdminScript';
+  script.src = '/mods/' + modId + '/admin-ui.js?' + Date.now();
+  script.onload = function() { console.log('[MOD] Loaded admin-ui.js for', modId); };
+  script.onerror = function() { console.error('[MOD] Failed to load admin-ui.js for', modId); loadedModAdminUI = null; };
+  document.body.appendChild(script);
+}
+
+// ── Click-to-assign Teams ──
+function selectPlayer(profileUuid) {
+  // Toggle: if same player clicked, deselect
+  if (dragPlayerId === profileUuid) {
+    dragPlayerId = null;
+  } else {
+    dragPlayerId = profileUuid;
+  }
+  renderTeams();
+}
+
+function assignToTeam(teamIdx) {
+  if (!dragPlayerId) {
+    showAdminBanner('👆 Click a player first', '#fef3c7', '#d97706');
+    return;
+  }
+  // Remove from all teams
+  teams.forEach(t => {
+    if (t.playerIds) t.playerIds = t.playerIds.filter(id => id !== dragPlayerId);
+  });
+  // Add to target
+  if (teamIdx >= 0 && teamIdx < teams.length) {
+    if (!teams[teamIdx].playerIds) teams[teamIdx].playerIds = [];
+    teams[teamIdx].playerIds.push(dragPlayerId);
+  }
+  // Reset selection and update
+  dragPlayerId = null;
+  sendTeams();
+}
+
+// Admin actions
+function doStart(delay) {
+  // Don't allow starting if a round is in progress
+  if (gameState.phase !== 'lobby') return;
+  try{ws.send(JSON.stringify({type:'start_round',delay}))}catch(e){}
+}
+function doStartWithDelay() {
+  if (gameState.phase !== 'lobby') return;
+  doStart(parseInt(document.getElementById('delayInput').value)||10);
+}
+function doRight() { try{ws.send(JSON.stringify({type:'judge_right'}))}catch(e){} }
+function doEndGame() {
+  if(!confirm('End the game and show the podium?')) return;
+  try{ws.send(JSON.stringify({type:'end_game'}))}catch(e){}
+}
+function doWrong() { try{ws.send(JSON.stringify({type:'judge_wrong'}))}catch(e){} }
+function doFreeze() { try{ws.send(JSON.stringify({type:'freeze'}))}catch(e){} }
+function doUnfreeze() { try{ws.send(JSON.stringify({type:'unfreeze'}))}catch(e){} }
+function doResetAll() { if(confirm('Reset all scores and history?')) try{ws.send(JSON.stringify({type:'reset_all'}))}catch(e){} }
+function doExport() { try{ws.send(JSON.stringify({type:'export_scores'}))}catch(e){} }
+
+function setTheme(t) { document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===t)); try{ws.send(JSON.stringify({type:'theme_change',theme:t}))}catch(e){} }
+
+function updatePlayer(ip, profileUuid, field, value) {
+  const payload = {type:'update_player', ip};
+  if (profileUuid) payload.profileUuid = profileUuid;
+  if (field === 'score') payload.score = parseFloat(value)||0;
+  else payload.name = value;
+  try{ws.send(JSON.stringify(payload))}catch(e){}
+}
+function kickPlayer(ip, profileUuid) { if(!confirm('Kick this player?')) return; const payload = {type:'kick_player',ip}; if(profileUuid) payload.profileUuid = profileUuid; try{ws.send(JSON.stringify(payload))}catch(e){} }
+
+function showJudgePanel(name) { document.getElementById('judgeName').textContent = name; document.getElementById('judgePanel').classList.add('show'); document.getElementById('buzzerTimer').textContent = '⏱️ 0.0s'; }
+function hideJudgePanel() { document.getElementById('judgePanel').classList.remove('show'); }
+function setConnStatus(type, label) {
+  const dot = document.getElementById('connDot'), lbl = document.getElementById('connLabel');
+  dot.className = 'conn-dot conn-' + type; lbl.textContent = label;
+}
+
+function showAdminBanner(text, bg, color) {
+  const div = document.createElement('div');
+  div.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:${bg||'#dcfce7'};color:${color||'#16a34a'};padding:12px 24px;border-radius:12px;font-weight:600;font-size:14px;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.1);animation:fadeIn .2s ease-out`;
+  div.textContent = text;
+  div.id = 'adminBanner';
+  const old = document.getElementById('adminBanner');
+  if (old) old.remove();
+  document.body.appendChild(div);
+  setTimeout(() => { const d = document.getElementById('adminBanner'); if (d) d.remove(); }, 4000);
+}
+
+function copyIP() { navigator.clipboard.writeText('http://' + document.getElementById('serverIp').textContent + ':' + document.getElementById('serverPort').textContent).then(()=>{}) }
+
+function downloadText(text, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text],{type:'text/plain'})); a.download = name; a.click(); URL.revokeObjectURL(a.href); }
+function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+connect();
+</script>
+</body>
+</html>

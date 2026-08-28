@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="game">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Buzz! — Game Show</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:linear-gradient(135deg,#f5f7fa,#e8ecf1);--card-bg:#fff;--card-border:none;--card-shadow:0 2px 12px rgba(0,0,0,.06);
+  --text:#1a1a2e;--text2:#8e8ea0;--text3:#b0b0c0;--accent:#6c63ff;--accent-h:#5a52e0;
+  --buzz-bg:linear-gradient(145deg,#ff4757,#e8354a);--buzz-shadow:0 8px 32px rgba(255,71,87,.35);
+  --buzz-text:#fff;--buzz-disabled:#d1d5db;--buzz-disabled-text:#9ca3af;
+  --score-accent:#6c63ff;
+  --body-font:'Inter',sans-serif;--header-font:'Inter',sans-serif;
+  --buzz-size:200px;--buzz-fs:30px;
+  --pill-x:#dcfce7;--pill-x-text:#16a34a;--pill-buzz:#fef3c7;--pill-buzz-text:#d97706;
+}
+body{font-family:var(--body-font);background:var(--bg);min-height:100vh;color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;touch-action:manipulation}
+.container{max-width:600px;margin:0 auto;padding:16px}
+.header{text-align:center;padding:16px 0 4px;font-family:var(--header-font)}
+.header h1{font-size:28px;font-weight:800;letter-spacing:-.5px;color:var(--text)}
+.header .sub{font-size:13px;color:var(--text2);font-weight:500;margin-top:2px}
+.card{background:var(--card-bg);border-radius:16px;padding:20px;box-shadow:var(--card-shadow);border:var(--card-border);margin-bottom:14px}
+.name-card{text-align:center}
+.name-card h2{font-size:18px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.name-card input{width:100%;padding:14px 16px;border:2px solid var(--text3);border-radius:12px;font-size:16px;font-family:inherit;outline:none;transition:border .2s;background:var(--bg)}
+.name-card input:focus{border-color:var(--accent);background:var(--card-bg)}
+.name-card button{width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;background:var(--accent);color:#fff;transition:transform .1s,opacity .2s;margin-top:10px}
+.name-card button:active{transform:scale(.97)}
+.name-card button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.buzz-area{position:relative;height:240px;display:flex;align-items:center;justify-content:center;margin-bottom:0;pointer-events:none}
+.buzz-btn{
+  width:var(--buzz-size);height:var(--buzz-size);border-radius:50%;border:none;
+  font-family:var(--header-font);font-size:var(--buzz-fs);font-weight:800;cursor:pointer;
+  color:var(--buzz-text);text-transform:uppercase;letter-spacing:2px;
+  background:var(--buzz-bg);box-shadow:var(--buzz-shadow);transition:all .1s;
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;
+  -webkit-user-select:none;pointer-events:auto;z-index:5;
+}
+.buzz-btn:active{transform:translate(-50%,-50%) scale(.88)!important}
+.buzz-btn.enabled{animation:pulseBuzz 1.5s infinite}
+@keyframes pulseBuzz{0%,100%{box-shadow:var(--buzz-shadow)}50%{opacity:.85}}
+.buzz-btn:disabled{background:var(--buzz-disabled);box-shadow:none;cursor:not-allowed;color:var(--buzz-disabled-text);transform:translate(-50%,-50%)!important;animation:none}
+.buzz-btn .sub{display:block;font-size:12px;font-weight:500;opacity:.8;margin-top:4px;letter-spacing:0}
+.scoreboard{background:var(--card-bg);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);border:var(--card-border)}
+.sb-title{padding:12px 16px;font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;background:var(--bg);border-bottom:1px solid transparent}
+.p-row{display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid var(--text3);transition:background .2s}
+.p-row:last-child{border-bottom:none}
+.p-row.buzzed{background:var(--pill-buzz)}
+.p-row.correct{background:var(--pill-x)}
+.p-rank{font-size:13px;font-weight:700;color:var(--text3);width:28px}
+.p-name{flex:1;font-size:15px;font-weight:500;color:var(--text)}
+.p-name.me{font-weight:700;color:var(--accent)}
+.p-score{font-size:16px;font-weight:700;color:var(--score-accent);min-width:40px;text-align:right;transition:transform .3s}
+.p-score.bump{animation:scoreBump .4s ease-out}
+@keyframes scoreBump{0%{transform:scale(1)}40%{transform:scale(1.3);color:#22c55e}100%{transform:scale(1)}}
+.p-badge{font-size:10px;padding:3px 8px;border-radius:6px;font-weight:600;margin-left:8px;white-space:nowrap}
+.badge-x{background:var(--pill-x);color:var(--pill-x-text)}
+.badge-buzz{background:var(--pill-buzz);color:var(--pill-buzz-text)}
+.podium-overlay{display:none;position:fixed;inset:0;background:linear-gradient(180deg,#1a1a2e 0%,#16213e 100%);z-index:300;justify-content:center;align-items:flex-end;flex-direction:column;overflow:hidden}
+.podium-overlay.show{display:flex}
+.podium-title{width:100%;text-align:center;padding:40px 16px 20px;font-size:36px;font-weight:800;color:#f59e0b;font-family:var(--header-font);letter-spacing:2px;animation:podiumTitle .8s ease-out}
+@keyframes podiumTitle{from{opacity:0;transform:translateY(-40px)}to{opacity:1;transform:translateY(0)}}
+.podium-rank{width:100%;display:flex;justify-content:center;align-items:flex-end;gap:8px;padding:0 16px 30px}
+.podium-item{display:flex;flex-direction:column;align-items:center;gap:6px;animation:podiumSlide .6s ease-out backwards}
+.podium-item:nth-child(2){animation-delay:.2s}
+.podium-item:nth-child(1){animation-delay:.4s}
+.podium-item:nth-child(3){animation-delay:.6s}
+@keyframes podiumSlide{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:translateY(0)}}
+.podium-avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;border:3px solid rgba(255,255,255,.2);box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.podium-name{font-size:14px;font-weight:600;color:#fff;text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.podium-score{font-size:12px;font-weight:500;color:rgba(255,255,255,.5)}
+.podium-bar{width:80px;border-radius:8px 8px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:12px 4px 8px;gap:4px;position:relative;transition:height .6s ease-out}
+.podium-bar .medal{font-size:28px}
+.podium-1st{height:180px;background:linear-gradient(180deg,#f59e0b,#d97706)}
+.podium-2nd{height:130px;background:linear-gradient(180deg,#94a3b8,#64748b)}
+.podium-3rd{height:90px;background:linear-gradient(180deg,#b45309,#92400e)}
+.podium-1st .podium-avatar{background:linear-gradient(135deg,#fbbf24,#f59e0b);border-color:rgba(251,191,36,.4)}
+.podium-2nd .podium-avatar{background:linear-gradient(135deg,#cbd5e1,#94a3b8);border-color:rgba(148,163,184,.3)}
+.podium-3rd .podium-avatar{background:linear-gradient(135deg,#d97706,#b45309);border-color:rgba(180,83,9,.3)}
+.podium-confetti{position:absolute;width:100%;height:100%;top:0;left:0;pointer-events:none;overflow:hidden}
+.podium-confetti span{position:absolute;width:8px;height:8px;border-radius:2px;animation:confettiFall 3s ease-in infinite}
+@keyframes confettiFall{0%{transform:translateY(-30px) rotate(0deg);opacity:1}100%{transform:translateY(500px) rotate(720deg);opacity:0}}
+.podium-footer{width:100%;text-align:center;padding:16px;font-size:14px;color:rgba(255,255,255,.3);font-weight:400}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@media(max-width:480px){
+  --buzz-size:170px;--buzz-fs:26px
+  .buzz-area{height:200px}
+  .container{padding:12px}
+  .header h1{font-size:24px}
+  .podium-title{font-size:28px;padding:30px 12px 16px}
+  .podium-bar{width:70px}
+  .podium-1st{height:150px}
+  .podium-2nd{height:110px}
+  .podium-3rd{height:75px}
+  .podium-avatar{width:44px;height:44px;font-size:18px}
+  .podium-name{font-size:12px;max-width:60px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header"><h1>🔔 BUZZ!</h1><div class="sub">Game Show Buzzer System</div></div>
+
+  <!-- Name entry -->
+  <div class="card name-card" id="nameCard">
+    <h2>Enter your name to join</h2>
+    <input type="text" id="nameInput" placeholder="Your display name..." maxlength="20" autocomplete="off">
+    <button id="joinBtn" onclick="joinGame()">Join Game</button>
+    <div id="joinError" style="color:#ef4444;font-size:13px;margin-top:8px;display:none"></div>
+  </div>
+
+  <!-- Buzz button -->
+  <div class="buzz-area" id="buzzArea">
+    <button class="buzz-btn" id="buzzBtn" disabled>BUZZ<span class="sub">Tap to answer</span></button>
+  </div>
+
+  <!-- Scoreboard -->
+  <div class="scoreboard" id="scoreboard">
+    <div class="sb-title">🏆 Scoreboard</div>
+    <div id="playerList"></div>
+  </div>
+
+  <div style="text-align:center;padding:12px 0;font-size:11px;color:var(--text3)" id="playerIdDisplay"></div>
+
+  <!-- Mod UI injection area -->
+  <div id="mod-area" style="display:none;margin-top:12px;border-radius:12px;overflow:hidden;background:var(--card-bg);box-shadow:var(--card-shadow);border:var(--card-border)"></div>
+</div>
+
+<!-- Podium Overlay -->
+<div class="podium-overlay" id="podiumOverlay">
+  <div class="podium-confetti" id="podiumConfetti"></div>
+  <div class="podium-title">🏆 Game Over!</div>
+  <div class="podium-rank" id="podiumRank"></div>
+  <div class="podium-footer" id="podiumFooter">
+    <button onclick="document.getElementById('podiumOverlay').classList.remove('show')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px">🔙 Back to Scoreboard</button>
+    <div style="font-size:12px;color:rgba(255,255,255,.3)">Wait for admin to start a new game</div>
+  </div>
+</div>
+
+<script>
+// ── Audio ──
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+function playBuzzer() {
+  try {
+    initAudio();
+    const osc = audioCtx.createOscillator(), env = audioCtx.createGain();
+    osc.type = 'square'; osc.frequency.value = 440;
+    const t = audioCtx.currentTime;
+    env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(.25, t + .01);
+    env.gain.exponentialRampToValueAtTime(.001, t + .25);
+    osc.connect(env); env.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + .25);
+  } catch(e) {}
+}
+function playCorrect() {
+  try {
+    initAudio();
+    [523, 659, 784].forEach((f, i) => {
+      const osc = audioCtx.createOscillator(), env = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.value = f;
+      const t = audioCtx.currentTime + i * .12;
+      env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(.2, t + .02);
+      env.gain.exponentialRampToValueAtTime(.001, t + .3);
+      osc.connect(env); env.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + .3);
+    });
+  } catch(e) {}
+}
+function playWrong() {
+  try {
+    initAudio();
+    const osc = audioCtx.createOscillator(), env = audioCtx.createGain();
+    osc.type = 'sawtooth'; osc.frequency.value = 150;
+    const t = audioCtx.currentTime;
+    env.gain.setValueAtTime(.15, t); env.gain.exponentialRampToValueAtTime(.001, t + .4);
+    osc.connect(env); env.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + .4);
+  } catch(e) {}
+}
+function playVictory() {
+  try {
+    initAudio();
+    [392, 494, 523, 659].forEach((f, i) => {
+      const osc = audioCtx.createOscillator(), env = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.value = f;
+      const t = audioCtx.currentTime + i * .15;
+      env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(.25, t + .02);
+      env.gain.linearRampToValueAtTime(.15, t + .08);
+      env.gain.exponentialRampToValueAtTime(.001, t + .5);
+      osc.connect(env); env.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + .5);
+    });
+  } catch(e) {}
+}
+
+// ── Persistent player ID ──
+function getPlayerId() {
+  let pid = localStorage.getItem('buzzerPlayerId');
+  if (!pid) {
+    pid = 'p-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('buzzerPlayerId', pid);
+  }
+  return pid;
+}
+const PLAYER_ID = getPlayerId();
+
+// ── WebSocket ──
+const WS_URL = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host;
+let ws = null;
+let connState = 'disconnected';
+let myIp = null;
+let myName = '';
+let joined = false;
+let joinPending = false;
+let reconnectTimer = null;
+let joinTimeout = null;
+let reconnectAttempt = 0;
+let teamsMode = false;
+let teams = [];
+let lastPlayers = [];
+let activeModId = null;
+let loadedModPlayerUI = null;
+let modScriptLoaded = {};
+
+function connect() {
+  if (ws && ws.readyState === WebSocket.OPEN) return;
+  connState = 'connecting';
+  updateConnectionUI();
+  ws = new WebSocket(WS_URL);
+
+  ws.onopen = () => {
+    connState = 'connected';
+    reconnectAttempt = 0;
+    document.getElementById('dcOverlay') && document.getElementById('dcOverlay').classList.remove('show');
+    updateConnectionUI();
+    if (joinPending || (myName && !joined)) {
+      ws.send(JSON.stringify({ type: 'join', name: myName, profileUuid: PLAYER_ID }));
+    }
+  };
+
+  ws.onmessage = (e) => {
+    try { handleMessage(JSON.parse(e.data)); }
+    catch(err) { /* ignore */ }
+  };
+
+  ws.onclose = () => {
+    connState = 'disconnected';
+    joined = false;
+    updateConnectionUI();
+    reconnectAttempt++;
+    const delay = Math.min(1000 * reconnectAttempt, 5000);
+    if (reconnectAttempt > 3) {
+      document.getElementById('dcOverlay') && document.getElementById('dcOverlay').classList.add('show');
+      document.getElementById('dcMsg') && (document.getElementById('dcMsg').textContent = myName ? `Reconnecting in ${(delay/1000).toFixed(0)}s...` : 'Connection lost');
+    }
+    clearTimeout(reconnectTimer);
+    reconnectTimer = setTimeout(connect, delay);
+  };
+
+  ws.onerror = () => { };
+}
+
+function reconnectNow() {
+  clearTimeout(reconnectTimer);
+  if (ws) { ws.onclose = null; ws.close(); }
+  connect();
+}
+
+function handleMessage(msg) {
+  switch (msg.type) {
+    case 'connected':
+      updateConnectionUI();
+      break;
+
+    case 'joined':
+      joined = true;
+      joinPending = false;
+      clearTimeout(joinTimeout);
+      myIp = msg.player.ip;
+      myGamePhase = msg.gameState.phase || 'lobby';
+      document.getElementById('nameCard').style.display = 'none';
+      document.getElementById('scoreboard').style.display = 'block';
+      document.getElementById('playerIdDisplay').textContent = PLAYER_ID.substring(0, 12) + '...';
+      updateUI(msg.gameState, msg.players);
+      // If a mod is active, load its player-ui
+      if (msg.activeMod) {
+        activeModId = msg.activeMod;
+        loadModPlayerUI(msg.activeMod);
+      }
+      break;
+
+    case 'players_update':
+      if (joined) {
+        if (msg.gameState && msg.gameState.phase) {
+          myGamePhase = msg.gameState.phase;
+          updateUI(msg.gameState, msg.players);
+          // Load mod player-ui if active mod changed
+          if (msg.gameState.activeMod && msg.gameState.activeMod !== activeModId) {
+            activeModId = msg.gameState.activeMod;
+            loadModPlayerUI(msg.gameState.activeMod);
+          } else if (!msg.gameState.activeMod && activeModId) {
+            activeModId = null;
+            loadModPlayerUI(null);
+          }
+        } else {
+          updatePlayersUI(msg.players);
+        }
+      }
+      break;
+
+    case 'buzzers_enabled':
+      clearTimeout(window.nextRoundTimer);
+      myGamePhase = 'active';
+      setBuzzEnabled(true, `🟢 Round ${msg.round} — Buzz in!`);
+      break;
+
+    case 'player_buzzed':
+      clearTimeout(window.nextRoundTimer);
+      myGamePhase = 'judged';
+      setBuzzEnabled(false, `🔔 ${msg.player} buzzed!`);
+      if (msg.ip !== myIp) playBuzzer();
+      break;
+
+    case 'you_buzzed_first':
+      playBuzzer();
+      break;
+
+    case 'buzz_rejected':
+      // Flash the button briefly (silent — no text change)
+      var btn = document.getElementById('buzzBtn');
+      if (btn) {
+        btn.style.transition = 'none';
+        btn.style.opacity = '0.3';
+        setTimeout(function() {
+          btn.style.transition = 'opacity 0.15s';
+          btn.style.opacity = '1';
+        }, 150);
+      }
+      break;
+
+    case 'correct_answer':
+      clearTimeout(window.nextRoundTimer);
+      myGamePhase = 'lobby';
+      setBuzzEnabled(false, `✅ ${msg.player} got it right!`);
+      if (msg.teams) teams = msg.teams;
+      playCorrect();
+      window.nextRoundTimer = setTimeout(() => setBuzzEnabled(false, '⏳ Next round...'), 2000);
+      break;
+
+    case 'wrong_answer':
+      clearTimeout(window.nextRoundTimer);
+      myGamePhase = 'lobby';
+      playWrong();
+      break;
+
+    case 'countdown':
+      clearTimeout(window.nextRoundTimer);
+      myGamePhase = 'countdown';
+      showCountdownOnButton(msg.seconds, msg.message || 'Get ready!');
+      break;
+
+    case 'frozen':
+      myGamePhase = 'frozen';
+      setBuzzEnabled(false, '⏸️ Frozen by admin');
+      break;
+
+    case 'unfrozen':
+      myGamePhase = 'lobby';
+      setBuzzEnabled(false, '⏳ Waiting for admin...');
+      break;
+
+    case 'reset':
+      clearTimeout(window.nextRoundTimer);
+      myGamePhase = 'lobby';
+      if (msg.players) updatePlayersUI(msg.players);
+      setBuzzEnabled(false, '🔄 Game reset!');
+      document.getElementById('podiumOverlay').classList.remove('show');
+      // Clear mod state
+      if (typeof window.onModMessage === 'function') {
+        window.onModMessage({ type: 'bq_reset', message: 'Game reset' });
+      }
+      break;
+
+    case 'round_end':
+      myGamePhase = 'lobby';
+      setBuzzEnabled(false, '⏳ Round over!');
+      break;
+
+    case 'kicked':
+      joined = false;
+      document.getElementById('nameCard').style.display = 'block';
+      document.getElementById('joinBtn').disabled = false;
+      document.getElementById('joinBtn').textContent = 'Join Game';
+      setBuzzEnabled(false, 'You were removed from the game');
+      document.getElementById('nameInput').value = '';
+      break;
+
+    case 'theme_change':
+      document.documentElement.setAttribute('data-theme', msg.theme);
+      break;
+
+    case 'game_ended':
+      myGamePhase = 'ended';
+      showPodium(msg.top3);
+      // Show "Back to Scoreboard" button inside podium overlay, above footer
+      setTimeout(function() {
+        var podium = document.getElementById('podiumOverlay');
+        if (podium && podium.classList.contains('show')) {
+          var existing = document.getElementById('backToLobbyBtn');
+          if (!existing) {
+            var btn = document.createElement('button');
+            btn.id = 'backToLobbyBtn';
+            btn.textContent = '📊 Back to Scoreboard';
+            btn.style.cssText = 'padding:12px 28px;border:none;border-radius:12px;background:linear-gradient(135deg,#6c63ff,#4a3fcf);color:#fff;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;z-index:310;box-shadow:0 4px 16px rgba(0,0,0,.3);width:calc(100% - 32px);max-width:300px;margin:12px auto;display:block';
+            btn.onclick = function() {
+              document.getElementById('podiumOverlay').classList.remove('show');
+              myGamePhase = 'lobby';
+              setBuzzEnabled(false, '⏳ Waiting for admin...');
+              this.remove();
+            };
+            // Insert before footer
+            var footer = document.getElementById('podiumFooter');
+            if (footer) {
+              footer.parentNode.insertBefore(btn, footer);
+            } else {
+              document.body.appendChild(btn);
+              btn.style.cssText += ';position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:310';
+            }
+          }
+        }
+      }, 4000);
+      break;
+    case 'teams_mode':
+      teamsMode = msg.enabled;
+      if (msg.teams) teams = msg.teams;
+      showTeamBanner();
+      break;
+    case 'teams_update':
+      if (msg.teams) teams = msg.teams;
+      showTeamBanner();
+      // Refresh player list which reads from updated teams
+      if (joined && lastPlayers.length) updatePlayersUI(lastPlayers);
+      break;
+    case 'mod_active':
+      activeModId = msg.modId;
+      loadModPlayerUI(msg.modId);
+      if (!msg.modId) {
+        // Clear the mod area when deactivated
+        var ma = document.getElementById('mod-area');
+        if (ma) { ma.style.display = 'none'; ma.innerHTML = ''; }
+        if (typeof window.onModMessage === 'function') {
+          window.onModMessage({ type: 'mod_ui_clear', modId: null });
+        }
+      }
+      break;
+  }
+  // Route mod messages to active mod's player-ui.js handler
+  if (msg.type && msg.type.startsWith('bq_') && typeof window.onModMessage === 'function') {
+    window.onModMessage(msg);
+  }
+}
+
+// ── UI ──
+function joinGame() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) return;
+  myName = name;
+  joinPending = true;
+  const btn = document.getElementById('joinBtn');
+  btn.disabled = true; btn.textContent = 'Joining...';
+  document.getElementById('joinError').style.display = 'none';
+
+  // If connected: send join immediately, start response timeout
+  if (connState === 'connected') {
+    ws.send(JSON.stringify({ type: 'join', name, profileUuid: PLAYER_ID }));
+    clearTimeout(joinTimeout);
+    joinTimeout = setTimeout(() => {
+      if (!joined && joinPending) {
+        btn.disabled = false; btn.textContent = 'Join Game';
+        document.getElementById('joinError').textContent = 'Join timed out. Try again.';
+        document.getElementById('joinError').style.display = 'block';
+        joinPending = false;
+      }
+    }, 8000);
+    return;
+  }
+
+  // Not connected — set short timer to try, then onopen handles it
+  clearTimeout(joinTimeout);
+  joinTimeout = setTimeout(() => {
+    if (connState === 'connected') {
+      ws.send(JSON.stringify({ type: 'join', name, profileUuid: PLAYER_ID }));
+    } else {
+      btn.disabled = false; btn.textContent = 'Join Game';
+      document.getElementById('joinError').textContent = 'Not connected to server. Try again.';
+      document.getElementById('joinError').style.display = 'block';
+      joinPending = false;
+    }
+  }, 1500);
+}
+
+function setBuzzEnabled(enabled, msg) {
+  const btn = document.getElementById('buzzBtn');
+
+  if (enabled) {
+    btn.disabled = false;
+    btn.className = 'buzz-btn enabled';
+    btn.innerHTML = 'BUZZ<span class="sub">Tap to answer</span>';
+    buzzReadyAt = Date.now();
+  } else {
+    btn.disabled = true;
+    btn.className = 'buzz-btn';
+    btn.innerHTML = '⏳<span class="sub">' + (msg || 'Wait...') + '</span>';
+  }
+}
+
+function updateConnectionUI() {
+  const dc = document.getElementById('dcOverlay');
+  if (!dc) return;
+  switch (connState) {
+    case 'disconnected': break;
+    case 'connecting': if (!joined) dc.classList.remove('show'); break;
+    case 'connected': dc.classList.remove('show'); break;
+  }
+}
+
+function updateUI(gameState, players) {
+  if (gameState) {
+    let msg = '';
+    switch (gameState.phase) {
+      case 'lobby': msg = '⏳ Waiting for admin to start...'; break;
+      case 'countdown': msg = '⏳ Round starting...'; break;
+      case 'active': setBuzzEnabled(true, '🟢 Buzz in!'); break;
+      case 'judged': msg = '🔴 Judge is reviewing...'; break;
+      case 'frozen': msg = '⏸️ Game frozen'; break;
+      case 'ended': msg = '🏆 Game Over!'; break;
+    }
+    if (msg) setBuzzEnabled(false, msg);
+  }
+  updatePlayersUI(players);
+}
+
+function updatePlayersUI(players) {
+  const list = document.getElementById('playerList');
+  lastPlayers = players || [];
+  if (!players || players.length === 0) {
+    list.innerHTML = '<div class="p-row" style="color:var(--text2);justify-content:center;padding:16px;font-size:14px">No players yet</div>';
+    return;
+  }
+
+  // In teams mode — render players grouped under their teams instead of flat list
+  if (teamsMode && teams.length > 0) {
+    renderGroupedTeamView(list, players);
+    renderTeamScoreboard(players);
+    return;
+  }
+
+  // Non-teams mode: flat scoreboard
+  const sorted = [...players].sort((a,b) => b.score - a.score);
+  list.innerHTML = sorted.map((p,i) => {
+    return '<div class="p-row' + (p.status === 'buzzed' ? ' buzzed' : '') + (p.status === 'correct' ? ' correct' : '') + '">' +
+      '<div class="p-rank">#' + (i+1) + '</div>' +
+      '<div class="p-name' + (p.ip === myIp ? ' me' : '') + '">' + esc(p.name) + (p.ip === myIp ? ' (You)' : '') + '</div>' +
+      '<div class="p-score" id="score-' + p.ip + '">' + p.score + '</div>' +
+      (p.scoreChanged ? '<div class="p-badge badge-x">+1</div>' : '') +
+      (p.status === 'buzzed' ? '<div class="p-badge badge-buzz">🔔</div>' : '') +
+      (p.status === 'correct' ? '<div class="p-badge badge-x">✅</div>' : '') +
+    '</div>';
+  }).join('');
+
+  // Hide team scoreboard in non-teams mode
+  const existing = document.getElementById('teamScoreboard');
+  if (existing) existing.style.display = 'none';
+}
+
+function renderGroupedTeamView(list, players) {
+  // Build a map: teamId -> {team, members: [player]}
+  var teamMap = {};
+  teams.forEach(function(t) { teamMap[t.name] = { team: t, members: [] }; });
+  var unassigned = [];
+
+  players.forEach(function(p) {
+    p.team ? teamMap[p.team.name].members.push(p) : unassigned.push(p);
+  });
+
+  // Sort teams by score descending, then sort players within each team by score
+  var sortedTeams = teams.slice().sort(function(a, b) { return (b.score || 0) - (a.score || 0); });
+  var html = '';
+  sortedTeams.forEach(function(t) {
+    var members = (teamMap[t.name] || { members: [] }).members.slice().sort(function(a, b) { return b.score - a.score; });
+    html += '<div class="team-section" style="margin-bottom:8px;border:1px solid var(--text3);border-radius:10px;overflow:hidden">' +
+      '<div class="team-header" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:' + (t.color || '#6c63ff') + '22;border-bottom:1px solid var(--text3)">' +
+      '<span style="font-weight:700;font-size:14px;color:' + (t.color || '#6c63ff') + '">' +
+      '<span class="t-dot" style="background:' + (t.color || '#6c63ff') + ';width:10px;height:10px;display:inline-block;border-radius:50%;vertical-align:middle;margin-right:6px"></span>' +
+      esc(t.name) + '</span>' +
+      '<span style="font-weight:700;font-size:14px">' + (t.score || 0) + ' pts</span></div>';
+    if (members.length === 0) {
+      html += '<div class="p-row" style="color:var(--text2);justify-content:center;padding:10px;font-size:12px">No players yet</div>';
+    } else {
+      members.forEach(function(p) {
+        html += '<div class="p-row' + (p.status === 'buzzed' ? ' buzzed' : '') + (p.status === 'correct' ? ' correct' : '') + '">' +
+          '<div class="p-name' + (p.ip === myIp ? ' me' : '') + '" style="padding-left:12px">' + esc(p.name) + (p.ip === myIp ? ' (You)' : '') + '</div>' +
+          '<div class="p-score" id="score-' + p.ip + '">' + p.score + '</div>' +
+          (p.scoreChanged ? '<div class="p-badge badge-x">+1</div>' : '') +
+          (p.status === 'buzzed' ? '<div class="p-badge badge-buzz">🔔</div>' : '') +
+          (p.status === 'correct' ? '<div class="p-badge badge-x">✅</div>' : '') +
+        '</div>';
+      });
+    }
+    html += '</div>';
+  });
+
+  // Unassigned players section (if any)
+  if (unassigned.length > 0) {
+    var sortedUnassigned = unassigned.slice().sort(function(a, b) { return b.score - a.score; });
+    html += '<div class="team-section" style="margin-bottom:8px;border:1px solid var(--text3);border-radius:10px;overflow:hidden;opacity:.6">' +
+      '<div class="team-header" style="display:flex;align-items:center;padding:8px 12px;background:var(--text3);border-bottom:1px solid var(--text3)">' +
+      '<span style="font-weight:700;font-size:13px;color:var(--text2)">🚫 Unassigned</span></div>';
+    sortedUnassigned.forEach(function(p) {
+      html += '<div class="p-row">' +
+        '<div class="p-name" style="padding-left:12px;color:var(--text2)">' + esc(p.name) + '</div>' +
+        '<div class="p-score">' + p.score + '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+  }
+
+  list.innerHTML = html;
+}
+
+function renderTeamScoreboard(playersList) {
+  const sb = document.getElementById('scoreboard');
+  let existing = document.getElementById('teamScoreboard');
+  if (!existing) {
+    existing = document.createElement('div');
+    existing.id = 'teamScoreboard';
+    existing.className = 'scoreboard';
+    existing.style.marginTop = '10px';
+    sb.parentNode.insertBefore(existing, sb.nextSibling);
+  }
+  const sortedTeams = [...(teams || [])].sort((a, b) => (b.score || 0) - (a.score || 0));
+  existing.innerHTML = '<div class="sb-title" style="background:var(--card-bg);border-bottom:1px solid var(--text3)">👥 Teams</div>' +
+    sortedTeams.map(function(t) {
+      const teamPlayers = (t.playerIds || []).map(id => {
+        const p = (playersList || []).find(p => p.profileUuid === id);
+        return p ? esc(p.name) : null;
+      }).filter(Boolean);
+      const playerList = teamPlayers.length > 0 ? '<div style="font-size:11px;color:var(--text2);padding:2px 4px 6px;line-height:1.5">' + teamPlayers.join(', ') + '</div>' : '';
+      return '<div class="p-row" style="flex-direction:column;align-items:stretch;gap:0">' +
+        '<div style="display:flex;align-items:center;padding:2px 0">' +
+        '<span class="t-dot" style="background:' + (t.color || '#6c63ff') + ';width:10px;height:10px;display:inline-block;border-radius:50%;vertical-align:middle;margin-right:6px"></span>' +
+        '<span class="p-name" style="font-weight:700">' + esc(t.name) + '</span>' +
+        '<span class="p-score">' + (t.score || 0) + '</span></div>' +
+        playerList + '</div>';
+    }).join('');
+  existing.style.display = 'block';
+}
+
+function showTeamBanner() {
+  const existing = document.getElementById('teamScoreboard');
+  if (existing) existing.style.display = teamsMode && teams.length > 0 ? 'block' : 'none';
+}
+
+function showCountdownOnButton(seconds, label) {
+  const btn = document.getElementById('buzzBtn');
+  if (seconds <= 0) {
+    btn.disabled = false;
+    btn.className = 'buzz-btn enabled';
+    btn.innerHTML = 'BUZZ<span class="sub">Tap to answer!</span>';
+    return;
+  }
+  btn.disabled = true;
+  btn.className = 'buzz-btn';
+  const sub = label && !/^\d+$/.test(label) ? label : 'Get ready!';
+  btn.innerHTML = seconds + '<span class="sub">' + sub + '</span>';
+}
+
+function showPodium(top3) {
+  const overlay = document.getElementById('podiumOverlay');
+  const rank = document.getElementById('podiumRank');
+  const confetti = document.getElementById('podiumConfetti');
+
+  if (!top3 || top3.length === 0) {
+    rank.innerHTML = '<div style="color:rgba(255,255,255,.5);padding:40px;text-align:center;font-size:18px">No players participated</div>';
+    overlay.classList.add('show');
+    return;
+  }
+
+  const medals = ['🥇', '🥈', '🥉'];
+  const colors = ['#f59e0b', '#94a3b8', '#b45309'];
+  const bars = ['podium-1st', 'podium-2nd', 'podium-3rd'];
+
+  // Build rank map: original index in top3 = rank (0=1st, 1=2nd, 2=3rd)
+  const positions = top3.length >= 3
+    ? [top3[1], top3[0], top3[2]]
+    : top3.length === 2
+    ? [top3[1], top3[0], null]
+    : [null, top3[0], null];
+
+  // Visual position index -> actual rank index mapping
+  // position[0]=silver(rank1), position[1]=gold(rank0), position[2]=bronze(rank2)
+  const rankMap = top3.length >= 3 ? [1, 0, 2]
+    : top3.length === 2 ? [1, 0, -1]
+    : [-1, 0, -1];
+
+  confetti.innerHTML = '';
+  const confettiColors = ['#f59e0b','#ef4444','#22c55e','#3b82f6','#ec4899','#8b5cf6','#14b8a6'];
+  for (let i = 0; i < 40; i++) {
+    const span = document.createElement('span');
+    span.style.left = Math.random() * 100 + '%';
+    span.style.background = confettiColors[i % confettiColors.length];
+    span.style.animationDelay = Math.random() * 2 + 's';
+    span.style.animationDuration = (2 + Math.random() * 3) + 's';
+    span.style.width = (4 + Math.random() * 6) + 'px';
+    span.style.height = (4 + Math.random() * 6) + 'px';
+    confetti.appendChild(span);
+  }
+
+  rank.innerHTML = positions.map((p, i) => {
+    if (!p) return '<div class="podium-item" style="width:80px;justify-content:flex-end"><div class="podium-bar" style="height:40px;background:rgba(255,255,255,.05)"><div style="color:rgba(255,255,255,.2);font-size:12px">—</div></div></div>';
+    const ri = rankMap[i]; // actual rank index into medals/bars/colors
+    const safeIdx = ri >= 0 ? ri : 0;
+    const initials = p.name.split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 2) || p.name[0].toUpperCase();
+    const teamBadge = p.teamColor ? '<div style="font-size:10px;color:' + p.teamColor + ';font-weight:600;margin-top:2px">● ' + esc(p.teamName || '') + '</div>' : '';
+    return '<div class="podium-item">' +
+      '<div class="podium-avatar" style="background:linear-gradient(135deg,' + colors[safeIdx] + ',' + colors[safeIdx] + 'dd)">' + initials + '</div>' +
+      '<div class="podium-name">' + esc(p.name) + '</div>' +
+      teamBadge +
+      '<div class="podium-score">' + p.score + ' pts</div>' +
+      '<div class="podium-bar ' + bars[safeIdx] + '"><span class="medal">' + medals[safeIdx] + '</span></div>' +
+    '</div>';
+  }).join('');
+
+  playVictory();
+  overlay.classList.add('show');
+}
+
+function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+// ── Buzz: 1s debounce + 200ms enable grace + spam lockout ──
+let buzzDebounce = false;
+let spamTimer = null; // Non-null = player is in spam lockout
+let buzzReadyAt = 0;
+let myGamePhase = 'lobby';
+
+function sendBuzz() {
+  if (buzzDebounce || spamTimer) return;
+  if (Date.now() - buzzReadyAt < 200) return;
+  buzzDebounce = true;
+  try { ws.send(JSON.stringify({ type: 'buzz' })); } catch(e) {}
+  setTimeout(() => { buzzDebounce = false; }, 1000);
+}
+
+// Track rapid clicks on disabled button: ≥5 within 2s → lockout starts at 1s
+// Each 3 more clicks during lockout adds 1s
+const SPAM_WINDOW = 2000;
+const SPAM_LIMIT = 5;
+const SPAM_LOCKOUT_FIRST = 1000;
+const SPAM_LOCKOUT_EXTRA = 1000;
+let clickLog = [];
+let spamClearTimer = null; // handle for the timeout that clears spamTimer
+let spamCountdownInterval = null; // 1s interval to show remaining seconds
+
+function startSpamCountdown(endTime) {
+  if (spamCountdownInterval) clearInterval(spamCountdownInterval);
+  spamCountdownInterval = setInterval(() => {
+    const btn = document.getElementById('buzzBtn');
+    if (!btn) { clearInterval(spamCountdownInterval); spamCountdownInterval = null; return; }
+    const remaining = Math.max(0, Math.ceil((spamTimer - Date.now()) / 1000));
+    if (remaining <= 0 || !spamTimer) {
+      clearInterval(spamCountdownInterval);
+      spamCountdownInterval = null;
+    } else {
+      btn.innerHTML = '⏳<span class="sub">⏰ Spam lock (' + remaining + 's)</span>';
+    }
+  }, 200);
+}
+
+function clearSpam() {
+  spamTimer = null;
+  spamClearTimer = null;
+  if (spamCountdownInterval) { clearInterval(spamCountdownInterval); spamCountdownInterval = null; }
+  // Restore button to proper state
+  const btn = document.getElementById('buzzBtn');
+  if (!btn) return;
+  if (myGamePhase === 'active') {
+    btn.disabled = false;
+    btn.className = 'buzz-btn enabled';
+    btn.innerHTML = 'BUZZ<span class="sub">Tap to answer</span>';
+    buzzReadyAt = Date.now();
+  } else {
+    btn.disabled = true;
+    btn.className = 'buzz-btn';
+    btn.innerHTML = '⏳<span class="sub">Wait...</span>';
+  }
+}
+
+function trackClick() {
+  const now = Date.now();
+  clickLog = clickLog.filter(t => t > now - SPAM_WINDOW);
+  clickLog.push(now);
+
+  if (spamTimer) {
+    if (clickLog.length >= 3) {
+      clickLog = [];
+      const remaining = spamTimer - now;
+      if (remaining <= 0) return;
+      const extended = remaining + SPAM_LOCKOUT_EXTRA;
+      spamTimer = now + extended;
+      if (spamClearTimer) clearTimeout(spamClearTimer);
+      spamClearTimer = setTimeout(clearSpam, extended);
+      startSpamCountdown(spamTimer);
+    }
+    return;
+  }
+
+  if (clickLog.length >= SPAM_LIMIT) {
+    clickLog = [];
+    spamTimer = now + SPAM_LOCKOUT_FIRST;
+    const btn = document.getElementById('buzzBtn');
+    btn.disabled = true;
+    btn.innerHTML = '⏳<span class="sub">⏰ Spam lock (1s)</span>';
+    if (spamClearTimer) clearTimeout(spamClearTimer);
+    spamClearTimer = setTimeout(clearSpam, SPAM_LOCKOUT_FIRST);
+    startSpamCountdown(spamTimer);
+  }
+}
+document.getElementById('buzzBtn').addEventListener('click', function(e) {
+  if (this.disabled) { trackClick(); return; }
+  sendBuzz();
+  this.style.transform = 'translate(-50%,-50%) scale(.85)';
+  setTimeout(() => this.style.transform = 'translate(-50%,-50%)', 100);
+});
+document.getElementById('buzzBtn').addEventListener('touchstart', function(e) {
+  if (this.disabled) { trackClick(); return; }
+  sendBuzz();
+  this.style.transform = 'translate(-50%,-50%) scale(.85)';
+  try { navigator.vibrate && navigator.vibrate(20); } catch(e){}
+}, {passive:true});
+document.getElementById('buzzBtn').addEventListener('touchend', function(e) {
+  this.style.transform = 'translate(-50%,-50%)';
+}, {passive:true});
+
+// Enter to join
+document.getElementById('nameInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') joinGame();
+});
+
+// ── Mod player-ui.js loader ──
+function loadModPlayerUI(modId) {
+  if (!modId) {
+    if (loadedModPlayerUI) {
+      var oldScript = document.getElementById('modPlayerScript');
+      if (oldScript) oldScript.remove();
+      loadedModPlayerUI = null;
+    }
+    return;
+  }
+  if (loadedModPlayerUI === modId) return;
+  // Unload previous
+  if (loadedModPlayerUI) {
+    var oldScript = document.getElementById('modPlayerScript');
+    if (oldScript) oldScript.remove();
+  }
+  loadedModPlayerUI = modId;
+  var script = document.createElement('script');
+  script.id = 'modPlayerScript';
+  script.src = '/mods/' + modId + '/player-ui.js?' + Date.now();
+  script.onload = function() { console.log('[MOD] Loaded player-ui.js for', modId); };
+  script.onerror = function() { console.error('[MOD] Failed to load player-ui.js for', modId); loadedModPlayerUI = null; };
+  document.body.appendChild(script);
+}
+
+// Online/offline
+window.addEventListener('online', function() { if (connState === 'disconnected') reconnectNow(); });
+window.addEventListener('offline', function() { });
+
+// Init
+connect();
+</script>
+</body>
+</html>
