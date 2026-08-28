@@ -155,6 +155,36 @@
         {"q":"'The truth shall make you ___'","a":"free","d":"John 8:32","type":"fill"},
         {"q":"'Thy word is a lamp unto my feet...' — Psalm ___","a":"119:105","d":"Psalm 119:105","type":"fill"}
       ]
+    },
+    {
+      "name": "Find the Wrong Word",
+      "icon": "🔍",
+      "questions": [
+        {"q":"In the beginning God created the heavens and the sun.","a":"sun","options":["sun","heavens","earth","light"],"d":"Genesis 1:1","type":"wrong_word"},
+        {"q":"Love is patient, love is fast.","a":"fast","options":["patient","fast","kind","jealous"],"d":"1 Corinthians 13:4","type":"wrong_word"},
+        {"q":"The Lord is my shepherd; I shall not be afraid.","a":"afraid","options":["shepherd","want","afraid","rest"],"d":"Psalm 23:1","type":"wrong_word"},
+        {"q":"Do to others what you would not have them do to you.","a":"not","options":["not","do","others","would"],"d":"Matthew 7:12","type":"wrong_word"},
+        {"q":"Jesus said: I am the way, the truth, and the light.","a":"light","options":["way","truth","light","life"],"d":"John 14:6","type":"wrong_word"},
+        {"q":"The fruit of the Spirit is love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, and self-pride.","a":"self-pride","options":["self-pride","love","gentleness","faithfulness"],"d":"Galatians 5:22-23","type":"wrong_word"},
+        {"q":"Moses received the Ten Commandments on Mount Sinai. He was there for 40 nights and 40 days.","a":"nights","options":["nights","days","Moses","Commandments"],"d":"Exodus 34:28","type":"wrong_word"},
+        {"q":"The wise men visited baby Jesus and gave him gold, frankincense, and myrrh.","a":"wise","options":["wise","gold","myrrh","frankincense"],"d":"Matthew 2:11","type":"wrong_word"}
+      ]
+    },
+    {
+      "name": "Guess the Verse Source",
+      "icon": "📚",
+      "questions": [
+        {"q":"I can do all things through him who strengthens me.","a":"Philippians","options":["Philippians","Ephesians","Colossians","1 Thessalonians"],"d":"4:13","type":"guess_source"},
+        {"q":"For God so loved the world that he gave his only Son.","a":"John","options":["John","Matthew","Romans","1 John"],"d":"3:16","type":"guess_source"},
+        {"q":"The Lord is my shepherd; I shall not want.","a":"Psalm","options":["Psalm","Proverbs","Isaiah","Job"],"d":"23:1","type":"guess_source"},
+        {"q":"In the beginning God created the heavens and the earth.","a":"Genesis","options":["Genesis","Exodus","John","Psalm"],"d":"1:1","type":"guess_source"},
+        {"q":"Trust in the Lord with all your heart.","a":"Proverbs","options":["Proverbs","Ecclesiastes","Psalm","Job"],"d":"3:5","type":"guess_source"},
+        {"q":"Jesus wept.","a":"John","options":["John","Luke","Mark","Matthew"],"d":"11:35","type":"guess_source"},
+        {"q":"Thy word is a lamp to my feet.","a":"Psalm","options":["Psalm","Proverbs","Isaiah","Jeremiah"],"d":"119:105","type":"guess_source"},
+        {"q":"Love never fails.","a":"1 Corinthians","options":["1 Corinthians","Romans","Philippians","Hebrews"],"d":"13:8","type":"guess_source"},
+        {"q":"Be still, and know that I am God.","a":"Psalm","options":["Psalm","Isaiah","Exodus","1 Kings"],"d":"46:10","type":"guess_source"},
+        {"q":"The fear of the Lord is the beginning of wisdom.","a":"Proverbs","options":["Proverbs","Psalm","Job","Ecclesiastes"],"d":"9:10","type":"guess_source"}
+      ]
     }
   ]
 }

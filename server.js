@@ -95,6 +95,7 @@ function recordGameResult(profileUuid, isCorrect) {
 // ── Sessions (in-memory, keyed by profileUuid) ──
 const sessions = new Map();          // profileUuid -> { ws, id, ip, name, score, joinedAt, lastPing, profileUuid }
 const adminSessions = new Set();
+const spectators = new Set();        // ws connections in watch-only mode
 const pendingCleanups = new Map();   // profileUuid -> setTimeout handle
 
 const MAX_ROUND_HISTORY = 500;
@@ -126,6 +127,7 @@ let gameState = {
   roundHistory: [],
   judgmentTimer: null,
   buzzTimerInterval: null,   // 1s interval to broadcast hold time to admin
+  buzzOrder: [],             // names in buzz order for the current round (spectator stats)
 
   // Teams mode
   teamsMode: false,
@@ -205,6 +207,7 @@ const wss = new WebSocketServer({ server });
 // Expose for mods to use
 global._gameWss = wss;
 global._gameAdminSessions = adminSessions;
+global._gameSendToPlayer = sendToPlayer;
 
 wss.on('connection', (ws, req) => {
   const ip = req.socket.remoteAddress.replace(/^::ffff:/, '');
@@ -226,6 +229,7 @@ wss.on('connection', (ws, req) => {
     console.log(`[-] Disconnect: ${closedIp} (player: ${playerId || '?'})`);
 
     adminSessions.delete(ws);
+    spectators.delete(ws);
 
     if (!playerId) return;
 
@@ -364,6 +368,7 @@ function handleMessage(ws, msg) {
       gameState.roundNumber++;
       gameState.buzzedPlayer = null;
       gameState.buzzedAt = null;
+      gameState.buzzOrder = [];
       // Reset spam strikes and wrong-answer lockout for all players on new round
       sessions.forEach(s => { s.buzzStrikes = 0; s.buzzLockedUntil = 0; s.lastBuzzAt = 0; s.wrongThisRound = false; });
 
@@ -388,6 +393,7 @@ function handleMessage(ws, msg) {
         broadcastToAll({ type: 'buzzers_enabled', round: gameState.roundNumber });
         broadcastToAdmin({ type: 'phase_change', phase: 'active', round: gameState.roundNumber });
       }
+      broadcastSpectatorStats();
       break;
 
     case 'judge_right':
@@ -442,6 +448,7 @@ function handleMessage(ws, msg) {
       gameState.phase = 'lobby';
       broadcastToAll({ type: 'round_end', reason: 'correct' });
       broadcastToAdmin({ type: 'phase_change', phase: 'lobby', round: gameState.roundNumber, message: 'Correct! +1 point' });
+      broadcastSpectatorStats();
       // Trigger mod onJudgeRight hook (show answer for Bible Quiz, etc.)
       modLoader.callHook('onJudgeRight', gameState);
       break;
@@ -467,6 +474,7 @@ function handleMessage(ws, msg) {
 
       broadcastToAll({ type: 'wrong_answer', player: buzzedName });
       broadcastToAdmin({ type: 'judge_result', result: 'wrong', player: buzzedName, roundEntry: wrongEntry });
+      broadcastSpectatorStats();
       gameState.buzzedPlayer = null;
       gameState.buzzedAt = null;
 
@@ -643,6 +651,19 @@ function handleMessage(ws, msg) {
 
     // ── Player ──
     case 'join':
+      if (msg.spectator) {
+        ws.role = 'spectator';
+        ws.joined = true;
+        spectators.add(ws);
+        ws.send(JSON.stringify({
+          type: 'joined_spectator',
+          players: getPlayerList(),
+          gameState: getPublicGameState(),
+          spectatorStats: getSpectatorStats(),
+        }));
+        broadcastPlayersUpdate();
+        return;
+      }
       const name = (msg.name || 'Anonymous').trim().substring(0, 20);
       const profileUuid = msg.profileUuid || ip; // fallback to IP if no UUID
 
@@ -699,6 +720,10 @@ function handleMessage(ws, msg) {
       break;
 
     case 'buzz':
+      if (ws.role === 'spectator') {
+        ws.send(JSON.stringify({ type: 'buzz_rejected', reason: '👁 Spectators cannot buzz' }));
+        return;
+      }
       if (gameState.phase !== 'active' || gameState.frozen) {
         ws.send(JSON.stringify({ type: 'buzz_rejected', reason: 'Not active' }));
         return;
@@ -744,9 +769,13 @@ function handleMessage(ws, msg) {
       gameState.buzzedPlayer = { ip: buzzer.ip, name: buzzer.name, playerId, profileUuid: buzzer.profileUuid };
       gameState.buzzedAt = now;
       gameState.phase = 'judged';
+      gameState.buzzOrder = gameState.buzzOrder || [];
+      if (gameState.buzzOrder.length < 12) gameState.buzzOrder.push(buzzer.name);
+      modLoader.callHook('onPlayerBuzz', gameState);
       broadcastToAll({ type: 'player_buzzed', player: buzzer.name, ip: buzzer.ip });
       broadcastToAdmin({ type: 'player_buzzed', player: buzzer.name, ip: buzzer.ip, profileUuid: buzzer.profileUuid });
       ws.send(JSON.stringify({ type: 'you_buzzed_first', round: gameState.roundNumber }));
+      broadcastSpectatorStats();
 
       // Start buzzer hold timer — 1s interval, broadcasts elapsed to admin
       clearBuzzTimerInterval();
@@ -941,9 +970,25 @@ function broadcastToAdmin(msg) {
 }
 
 function broadcastPlayersUpdate() {
-  const msg = { type: 'players_update', players: getPlayerList(), gameState: getPublicGameState() };
+  const msg = { type: 'players_update', players: getPlayerList(), gameState: getPublicGameState(), spectatorCount: spectators.size };
   broadcastToAll(msg);
   broadcastToAdmin(msg);
+}
+
+// ── Spectator stats ──
+function getSpectatorStats() {
+  return {
+    spectatorCount: spectators.size,
+    players: getPlayerList(),
+    gameState: getPublicGameState(),
+    buzzOrder: gameState.buzzOrder || [],
+  };
+}
+
+function broadcastSpectatorStats() {
+  const msg = { type: 'spectator_stats', ...getSpectatorStats() };
+  const data = JSON.stringify(msg);
+  spectators.forEach(c => { if (c.readyState === 1) c.send(data); });
 }
 
 // ── Mod system ──

@@ -112,7 +112,10 @@ body{font-family:var(--body-font);background:var(--bg);min-height:100vh;color:va
   <div class="card name-card" id="nameCard">
     <h2>Enter your name to join</h2>
     <input type="text" id="nameInput" placeholder="Your display name..." maxlength="20" autocomplete="off">
-    <button id="joinBtn" onclick="joinGame()">Join Game</button>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button id="joinBtn" onclick="joinGame()" style="flex:1">Join Game</button>
+      <button id="watchBtn" onclick="joinSpectator()" title="Watch the game without buzzing" style="flex:0 0 auto;background:transparent;border:1px solid var(--accent);color:var(--accent);padding:10px 12px;border-radius:8px;font-size:13px;cursor:pointer">👁 Watch only</button>
+    </div>
     <div id="joinError" style="color:#ef4444;font-size:13px;margin-top:8px;display:none"></div>
   </div>
 
@@ -224,6 +227,8 @@ let myName = '';
 let joined = false;
 let joinPending = false;
 let reconnectTimer = null;
+let isSpectator = false;
+let spectatorBuzzOrder = [];
 let joinTimeout = null;
 let reconnectAttempt = 0;
 let teamsMode = false;
@@ -300,7 +305,29 @@ function handleMessage(msg) {
       }
       break;
 
+    case 'joined_spectator':
+      joined = true;
+      joinPending = false;
+      isSpectator = true;
+      clearTimeout(joinTimeout);
+      document.getElementById('nameCard').style.display = 'none';
+      document.getElementById('buzzArea').style.display = 'none';
+      document.getElementById('scoreboard').style.display = 'none';
+      updateSpectatorStats(msg.spectatorStats || msg);
+      break;
+
+    case 'spectator_stats':
+      if (isSpectator) {
+        spectatorBuzzOrder = msg.buzzOrder || [];
+        updateSpectatorStats(msg);
+      }
+      break;
+
     case 'players_update':
+      if (isSpectator) {
+        // Refresh the score list live while watching
+        updateSpectatorStats({ players: msg.players, buzzOrder: spectatorBuzzOrder, spectatorCount: msg.spectatorCount });
+      }
       if (joined) {
         if (msg.gameState && msg.gameState.phase) {
           myGamePhase = msg.gameState.phase;
@@ -508,6 +535,66 @@ function joinGame() {
       joinPending = false;
     }
   }, 1500);
+}
+
+// ── Spectator mode ──
+function joinSpectator() {
+  if (connState !== 'connected') {
+    var err = document.getElementById('joinError');
+    if (err) { err.textContent = 'Still connecting, try again in a second...'; err.style.display = 'block'; }
+    return;
+  }
+  var nameCard = document.getElementById('nameCard');
+  if (nameCard) nameCard.style.display = 'none';
+  var buzzArea = document.getElementById('buzzArea');
+  if (buzzArea) buzzArea.style.display = 'none';
+  var sb = document.getElementById('scoreboard');
+  if (sb) sb.style.display = 'none';
+  var sp = document.getElementById('spectatorPanel');
+  if (!sp) {
+    sp = document.createElement('div');
+    sp.id = 'spectatorPanel';
+    sp.className = 'card';
+    sp.style.marginTop = '12px';
+    sp.innerHTML =
+      '<div class="sb-title">👁 Spectator Mode</div>' +
+      '<div id="spectatorStats" style="font-size:13px;color:var(--text2);padding:8px 0;line-height:1.7"></div>';
+    var ma = document.getElementById('mod-area');
+    document.querySelector('.container').insertBefore(sp, ma);
+  }
+  sp.style.display = 'block';
+  try { ws.send(JSON.stringify({ type: 'join', spectator: true })); } catch(e) {}
+}
+
+function updateSpectatorStats(stats) {
+  var el = document.getElementById('spectatorStats');
+  if (!el) return;
+  var players = (stats.players || []).slice().sort(function(a, b) { return (b.score || 0) - (a.score || 0); });
+  var html = '<div style="font-weight:600;margin-bottom:4px">🏆 Scores</div>';
+  if (!players.length) {
+    html += '<div style="color:var(--text3)">No players yet</div>';
+  } else {
+    players.forEach(function(p) {
+      html += '<div style="display:flex;justify-content:space-between;padding:2px 0">' +
+        '<span>' + escHtml(p.name) + '</span>' +
+        '<span style="font-weight:600">' + (p.score || 0) + '</span></div>';
+    });
+  }
+  var bo = stats.buzzOrder || [];
+  if (bo.length) {
+    html += '<div style="font-weight:600;margin-top:10px;margin-bottom:4px">🔔 Buzz order</div>' +
+      '<div style="font-size:12px;color:var(--text2)">' +
+      bo.map(function(n, i) { return (i + 1) + '. ' + escHtml(n); }).join(' &nbsp; ') +
+      '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function escHtml(s) {
+  if (s === undefined || s === null) return '';
+  var d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
 }
 
 function setBuzzEnabled(enabled, msg) {
