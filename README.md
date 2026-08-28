@@ -30,12 +30,34 @@ The default (changeme) is meant only for a quick LAN test. Port is configurable 
 - Pluggable quiz mods (questions, player UI, admin UI)
 - QR code page so phones can join instantly
 - Three standalone HTML theme variants in variants/
+- Spectator mode: a "Watch only" button on the join screen; viewers see live scores and buzz order and cannot buzz
+- Server-side answer timer (10s): if the host does not judge in time, the round ends automatically
 
 ## Included mods
 
 | Mod | Content |
 |---|---|
-| bible-quiz | 108 questions in categories with scripture references |
+| bible-quiz | 126 questions across 10 categories (standard, fill-in-the-blank, wrong-word, guess-the-source) plus an Akinator-style character guessing mode |
+
+### Bible Quiz 2.1 highlights
+
+- Answer privacy: after a buzz, the answer is revealed ONLY to the player who buzzed; everyone else sees a hidden notice without the answer text
+- Theme filter: pick one category (or all) in the admin panel; every round draws only from that theme
+- Wrong-word questions: the question is a verse with one wrong word, the host reads the options
+- Guess-the-source questions: verse text shown, players guess the Bible book
+- Akinator mode: yes/no questions narrow down a Bible character (25 characters in questions-akinator.json, a starter dataset; extend freely)
+- Questions data: mods/bible-quiz/questions.json (add a "type" field: standard, fill, wrong_word, guess_source)
+
+## Tests
+
+```bash
+# terminal 1
+PORT=3999 node server.js
+# terminal 2
+node test/smoke.js
+```
+
+The smoke test exercises the full flow: join, spectator rejection, mod activation, theme filter, winner-only answer reveal, the 10s timer, and Akinator.
 
 ## Build your own mod
 
